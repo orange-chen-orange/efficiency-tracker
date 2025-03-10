@@ -196,6 +196,14 @@ function DailySchedule() {
     timeSlots.forEach((hourSlots, hourIndex) => {
       const actualHour = 7 + hourIndex;
       
+      // 在每个小时行前方添加时间线
+      timeSlotRows.push(
+        <div className="time-line-row" key={`timeline-${hourIndex}`}>
+          <div className="hour-label"></div>
+          <TimeLine hour={actualHour} />
+        </div>
+      );
+      
       // 添加时间段行
       timeSlotRows.push(
         <div className="schedule-row" key={hourIndex}>
@@ -208,14 +216,6 @@ function DailySchedule() {
               onTaskChange={(task) => updateTask(hourIndex, segmentIndex, task)}
             />
           ))}
-        </div>
-      );
-      
-      // 在每个小时行下方添加时间线
-      timeSlotRows.push(
-        <div className="time-line-row" key={`timeline-${hourIndex}`}>
-          <div className="hour-label"></div>
-          <TimeLine hour={actualHour} />
         </div>
       );
     });
