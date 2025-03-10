@@ -1,0 +1,295 @@
+/* 基本样式，类似于 TimeSlot 但有特定修改 */
+.daily-task-slot {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
+  background-color: transparent;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: auto; /* 自适应高度 */
+  min-height: auto; /* 自适应高度 */
+  box-sizing: border-box;
+}
+
+/* 状态样式 */
+.daily-task-slot.status-initial {
+  border-left: 6px solid #2196f3;
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.daily-task-slot.status-completed {
+  border-left: 6px solid #4caf50;
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+.daily-task-slot.status-failed {
+  border-left: 6px solid #f44336;
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+.daily-task-slot.status-mixed {
+  border-left: 6px solid #ffc107;
+  background-color: rgba(255, 193, 7, 0.05);
+}
+
+/* 任务容器 - 调整布局 */
+.daily-task-slot .task-container {
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: auto; /* 自适应高度 */
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 8px; /* 添加一些内边距 */
+  margin: 0;
+  overflow-y: visible; /* 改为 visible，避免内容被截断 */
+  height: auto; /* 自适应高度 */
+  align-items: flex-start; /* 内容靠上对齐 */
+  justify-content: flex-start; /* 内容靠上对齐 */
+}
+
+/* 任务列表 - 不再使用 flex: 1 占满空间 */
+.daily-task-slot .tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 0;
+  padding: 0 2px;
+  margin-bottom: 0;
+  width: 100%; /* 确保宽度占满 */
+  align-self: flex-start; /* 靠上对齐 */
+  min-height: auto; /* 自适应高度 */
+  height: auto; /* 自适应高度 */
+}
+
+/* 任务项 */
+.daily-task-slot .task-item {
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  margin: 2px;
+  border-radius: 8px;
+  background-color: #e3f2fd;
+  transition: all 0.2s ease;
+  border-left: 6px solid #2196f3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: auto; /* 自适应高度 */
+  height: auto; /* 自适应高度 */
+}
+
+.daily-task-slot .task-item.status-completed {
+  background-color: rgba(76, 175, 80, 0.1);
+  border-left: 6px solid #4caf50;
+}
+
+.daily-task-slot .task-item.status-failed {
+  background-color: rgba(244, 67, 54, 0.1);
+  border-left: 6px solid #f44336;
+}
+
+.daily-task-slot .task-item.status-initial {
+  background-color: rgba(33, 150, 243, 0.1);
+  border-left: 6px solid #2196f3;
+}
+
+/* 任务状态控制 */
+.daily-task-slot .task-status-controls {
+  display: flex;
+  margin-right: 5px;
+}
+
+/* 任务内容 */
+.daily-task-slot .task-content {
+  flex: 1;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  word-break: break-word;
+  font-size: 16px;
+  text-align: left;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  min-height: auto; /* 自适应高度 */
+  height: auto; /* 自适应高度 */
+  line-height: 1.2; /* 控制行高 */
+}
+
+/* 状态按钮 */
+.daily-task-slot .status-btn {
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: none;
+  cursor: pointer;
+  padding: 0;
+  margin: 0 2px;
+  font-size: 14px;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.daily-task-slot .status-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+.daily-task-slot .status-btn.active {
+  opacity: 1;
+}
+
+.daily-task-slot .status-btn:nth-child(1).active {
+  color: #4caf50;
+}
+
+.daily-task-slot .status-btn:nth-child(2).active {
+  color: #f44336;
+}
+
+/* 删除按钮 */
+.daily-task-slot .delete-task-btn {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  font-size: 18px;
+  cursor: pointer;
+  color: #f44336;
+  opacity: 0.5;
+  transition: all 0.2s ease;
+}
+
+.daily-task-slot .delete-task-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* 添加按钮 - 初始状态在中间 */
+.daily-task-slot .add-task-btn {
+  position: relative; /* 改为相对定位 */
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 20px;
+  line-height: 1;
+  padding: 0;
+  margin: 5px auto; /* 上下间距，水平居中 */
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+.daily-task-slot .add-task-btn:hover {
+  background-color: #1976d2;
+  transform: scale(1.1); /* 简化变换 */
+}
+
+/* 当有任务时，按钮样式 */
+.daily-task-slot .add-task-btn.with-tasks {
+  position: relative;
+  margin: 5px auto; /* 上下间距，水平居中 */
+}
+
+.daily-task-slot .add-task-btn.with-tasks:hover {
+  background-color: #1976d2;
+  transform: scale(1.1);
+}
+
+/* 编辑框 */
+.daily-task-slot .task-edit {
+  display: flex;
+  padding: 2px; /* 减小内边距 */
+  margin: 2px 0; /* 减小外边距 */
+  width: 100%; /* 确保宽度占满 */
+  box-sizing: border-box; /* 确保内边距不会增加宽度 */
+}
+
+.daily-task-slot .task-edit input {
+  flex: 1;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 14px;
+  min-width: 0; /* 允许输入框缩小 */
+  width: 100%; /* 尽可能占据更多空间 */
+}
+
+.daily-task-slot .task-edit button {
+  margin-left: 5px;
+  padding: 8px 8px; /* 减小按钮内边距 */
+  background-color: #2196f3;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  white-space: nowrap; /* 防止文本换行 */
+  min-width: 60px; /* 设置最小宽度 */
+}
+
+.daily-task-slot .task-edit button:hover {
+  background-color: #1976d2;
+}
+
+/* 媒体查询 */
+@media (max-width: 1200px) {
+  .daily-task-slot {
+    padding: 0;
+    min-height: 125px;
+  }
+  
+  .daily-task-slot .task-container {
+    padding: 6px;
+  }
+  
+  .daily-task-slot .task-item {
+    padding: 2px;
+    margin: 2px;
+  }
+  
+  .daily-task-slot .status-btn {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
+  }
+  
+  .daily-task-slot .add-task-btn {
+    width: 28px;
+    height: 28px;
+    font-size: 16px;
+  }
+  
+  .daily-task-slot .tasks-list + .add-task-btn {
+    margin: 2px auto 3px;
+  }
+  
+  .daily-task-slot .task-content {
+    font-size: 14px;
+    text-align: left;
+    justify-content: flex-start;
+    display: flex;
+    align-items: center;
+  }
+  
+  .daily-task-slot .task-edit {
+    padding: 1px; /* 更小的内边距 */
+    margin: 1px 0; /* 更小的外边距 */
+  }
+  
+  .daily-task-slot .task-edit input, .daily-task-slot .task-edit button {
+    font-size: 12px;
+    padding: 4px; /* 更小的内边距 */
+  }
+  
+  .daily-task-slot .task-edit button {
+    min-width: 50px; /* 更小的最小宽度 */
+  }
+} 

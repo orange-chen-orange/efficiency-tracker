@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import TimeSlot from './TimeSlot';
 import TimeLine from './TimeLine';
+import DailyTaskSlot from './DailyTaskSlot';
 import '../../css/DailySchedule.css';
 
 function DailySchedule() {
@@ -223,7 +224,7 @@ function DailySchedule() {
     mainContent.push(
       <div className="schedule-grid" key="schedule-grid">
         <div className="daily-task-column">
-          <TimeSlot
+          <DailyTaskSlot
             key="daily-task-slot"
             time="Daily Tasks"
             task={dailyTask}
