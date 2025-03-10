@@ -272,7 +272,7 @@ function DailyTaskSlot({ time, task, onTaskChange }) {
         ) : (
           /* 添加按钮部分 */
           <button 
-            className={`add-task-btn ${tasks.length > 0 ? 'with-tasks' : ''}`}
+            className="add-task-btn"
             onClick={addNewTask}
           >
             +

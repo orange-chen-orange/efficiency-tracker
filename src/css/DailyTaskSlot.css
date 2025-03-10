@@ -46,8 +46,6 @@
   margin: 0;
   overflow-y: visible; /* 改为 visible，避免内容被截断 */
   height: 100%; /* 占据整个高度 */
-  align-items: center; /* 水平居中 */
-  justify-content: center; /* 垂直居中 */
 }
 
 /* 任务列表 - 不再使用 flex: 1 占满空间 */
@@ -174,7 +172,7 @@
 
 /* 添加按钮 - 初始状态在中间 */
 .daily-task-slot .add-task-btn {
-  position: relative; /* 相对定位 */
+  position: absolute;
   width: 30px;
   height: 30px;
   border-radius: 50%;
@@ -188,20 +186,26 @@
   font-size: 20px;
   line-height: 1;
   padding: 0;
-  margin: 0; /* 移除外边距 */
+  margin: 0;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
   transition: all 0.2s ease;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
 }
 
 .daily-task-slot .add-task-btn:hover {
   background-color: #1976d2;
-  transform: scale(1.1); /* 简化变换 */
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 /* 当有任务时，按钮样式 */
-.daily-task-slot .add-task-btn.with-tasks {
+.daily-task-slot .tasks-list + .add-task-btn {
   position: relative;
-  margin: 5px auto; /* 上下间距，水平居中 */
+  top: auto;
+  left: auto;
+  transform: none;
+  margin: 10px auto 5px;
 }
 
 .daily-task-slot .add-task-btn.with-tasks:hover {
