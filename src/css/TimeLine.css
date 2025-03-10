@@ -1,0 +1,71 @@
+.time-line-container {
+  width: 100%;
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  height: 15px;
+  display: flex;
+  align-items: center;
+}
+
+.time-line {
+  position: relative;
+  height: 100%;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+.progress-container {
+  width: 100%;
+  height: 100%;
+  background-color: #e0e0e0;
+  margin: 0;
+  padding: 0;
+  position: relative;
+}
+
+.progress-bar {
+  height: 100%;
+  background-color: #4caf50;
+  margin: 0;
+  padding: 0;
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+/* 大屏幕 (1200px以上) */
+@media (min-width: 1201px) {
+  .time-line-container {
+    height: 15px;
+  }
+}
+
+/* 中等屏幕 (992px - 1200px) */
+@media (max-width: 1200px) {
+  .time-line-container {
+    height: 12px;
+  }
+}
+
+/* 平板电脑 (768px - 991px) */
+@media (max-width: 991px) and (min-width: 768px) {
+  .time-line-container {
+    height: 10px;
+  }
+}
+
+/* 手机 (小于768px) */
+@media (max-width: 767px) {
+  .time-line-container {
+    height: 8px;
+  }
+}
+
+/* 小手机 (小于480px) */
+@media (max-width: 479px) {
+  .time-line-container {
+    height: 6px;
+  }
+} 

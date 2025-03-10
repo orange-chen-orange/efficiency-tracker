@@ -1,0 +1,246 @@
+.daily-schedule {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 20px;
+  font-family: 'Arial', sans-serif;
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.schedule-description {
+  text-align: center;
+  color: #666;
+  margin-bottom: 20px;
+}
+
+.reset-button {
+  display: block;
+  margin: 0 auto 20px;
+  padding: 8px 16px;
+  background-color: #f44336;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.3s ease;
+}
+
+.reset-button:hover {
+  background-color: #d32f2f;
+  transform: scale(1.05);
+}
+
+.reset-message {
+  text-align: center;
+  padding: 10px;
+  margin-bottom: 20px;
+  background-color: #4caf50;
+  color: white;
+  border-radius: 4px;
+  animation: fadeIn 0.5s, fadeOut 0.5s 2.5s;
+  font-weight: bold;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-10px); }
+}
+
+.schedule-container {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  border: 1px solid #e0e0e0;
+  border-radius: 8px;
+  overflow: hidden;
+  width: calc(100% + 100px);
+  max-width: 1300px;
+  margin: 0 auto;
+  padding: 0;
+}
+
+/* 新的网格布局 */
+.schedule-grid {
+  display: grid;
+  grid-template-columns: 400px 1fr;
+  border-top: 1px solid #e0e0e0;
+  margin: 0;
+  padding: 0;
+}
+
+.daily-task-column {
+  grid-column: 1;
+  border-right: 1px solid #e0e0e0;
+  background-color: #f9f9f9;
+  margin: 0;
+  padding: 0;
+}
+
+.daily-task-column .time-slot {
+  height: 100%;
+  min-height: 100%;
+  border-radius: 0;
+  box-shadow: none;
+}
+
+.time-slots-column {
+  grid-column: 2;
+  margin: 0;
+  padding: 0;
+}
+
+/* 头部行样式 */
+.schedule-row {
+  display: grid;
+  grid-template-columns: 80px repeat(3, minmax(0, 1fr));
+  gap: 0;
+  border-bottom: 1px solid #e0e0e0;
+  margin: 0;
+  padding: 0;
+  min-height: 50px;
+}
+
+.header-row {
+  grid-template-columns: 400px 80px repeat(3, minmax(0, 1fr));
+  border-bottom: 2px solid #1976d2;
+  margin: 0;
+  padding: 0;
+  height: 40px;
+}
+
+.daily-task-header, .time-header, .segment-header {
+  font-weight: bold;
+  padding: 0;
+  background-color: #2196f3;
+  color: white;
+  text-align: center;
+  border-right: 1px solid #1976d2;
+  font-size: 16px;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+.daily-task-header {
+  background-color: #1976d2;
+}
+
+.time-header:last-child, .segment-header:last-child {
+  border-right: none;
+}
+
+.hour-label {
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #e3f2fd;
+  color: #0d47a1;
+  border-right: 1px solid #e0e0e0;
+  height: 100%;
+  min-height: 110px;
+  font-size: 16px;
+}
+
+/* 时间线行样式 */
+.time-line-row {
+  display: grid;
+  grid-template-columns: 80px repeat(3, 1fr);
+  background-color: #f9f9f9;
+  border-bottom: 1px solid #e0e0e0;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0;
+  height: 15px;
+  margin: 0;
+}
+
+.time-line-row:last-child {
+  border-bottom: none;
+}
+
+.time-line-row .hour-label {
+  min-height: 15px;
+  height: 15px;
+  background-color: #f9f9f9;
+  border-right: 1px solid #e0e0e0;
+  margin: 0;
+  padding: 0;
+}
+
+.time-line-row .time-line-container {
+  grid-column: 2 / span 3;
+  padding: 0;
+  margin: 0;
+  height: 15px;
+  box-sizing: border-box;
+}
+
+/* 确保TimeSlot组件在schedule-row中的样式 */
+.schedule-row .time-slot {
+  border-right: 1px solid #e0e0e0;
+  margin: 0;
+  border-radius: 0;
+  box-shadow: none;
+  height: auto;
+  min-height: 60px;
+}
+
+.schedule-row .time-slot:last-child {
+  border-right: none;
+}
+
+@media (max-width: 1200px) {
+  .schedule-grid {
+    grid-template-columns: 400px 1fr;
+  }
+  
+  .schedule-row {
+    grid-template-columns: 70px repeat(3, minmax(0, 1fr));
+  }
+  
+  .header-row {
+    grid-template-columns: 400px 70px repeat(3, minmax(0, 1fr));
+    height: 40px;
+  }
+  
+  .daily-schedule {
+    padding: 15px;
+  }
+  
+  .time-header, .segment-header, .hour-label, .daily-task-header {
+    padding: 8px;
+    font-size: 14px;
+  }
+  
+  .hour-label, .schedule-row .time-slot {
+    min-height: 100px;
+    height: auto;
+  }
+  
+  /* 移动端时间线行样式 */
+  .time-line-row {
+    grid-template-columns: 70px repeat(3, 1fr);
+    height: 12px;
+  }
+  
+  .time-line-row .hour-label {
+    min-height: 12px;
+    height: 12px;
+  }
+  
+  .time-line-row .time-line-container {
+    height: 12px;
+  }
+} 
