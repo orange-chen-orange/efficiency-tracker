@@ -74,16 +74,50 @@ function DailySchedule() {
 
   // 格式化当前时间的函数
   const formatCurrentTime = () => {
-    const options = { 
-      weekday: 'long', 
-      year: 'numeric', 
-      month: 'long', 
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      second: '2-digit'
+    const year = currentTime.getFullYear();
+    const month = String(currentTime.getMonth() + 1).padStart(2, '0');
+    const day = String(currentTime.getDate()).padStart(2, '0');
+    const weekday = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][currentTime.getDay()];
+    
+    return `${year}-${month}-${day}, ${weekday}`;
+  };
+
+  // 统计任务数量的函数
+  const getTaskStats = () => {
+    let totalTasks = 0;
+    let completedTasks = 0;
+    let failedTasks = 0;
+    let initialTasks = 0;
+
+    // 统计时间段任务
+    timeSlots.forEach(hourSlots => {
+      hourSlots.forEach(slot => {
+        if (slot.task) {
+          // 解析任务字符串，提取任务和状态
+          const taskItems = slot.task.split('\n').filter(item => item.trim() !== '');
+          
+          taskItems.forEach(taskItem => {
+            totalTasks++;
+            
+            // 提取状态信息
+            if (taskItem.includes('[STATUS:completed]')) {
+              completedTasks++;
+            } else if (taskItem.includes('[STATUS:failed]')) {
+              failedTasks++;
+            } else {
+              initialTasks++;
+            }
+          });
+        }
+      });
+    });
+
+    return {
+      total: totalTasks,
+      completed: completedTasks,
+      failed: failedTasks,
+      initial: initialTasks
     };
-    return currentTime.toLocaleDateString(undefined, options);
   };
 
   // 每当 timeSlots 变化时，保存到 localStorage
@@ -271,7 +305,15 @@ function DailySchedule() {
   return (
     <div className="daily-schedule">
       <h1>Efficiency Tracker</h1>
-      <p className="schedule-description">{formatCurrentTime()}</p>
+      <div className="info-container">
+        <p className="schedule-description">{formatCurrentTime()}</p>
+        <p className="schedule-info">
+          Tasks: {getTaskStats().total} | 
+          Completed: {getTaskStats().completed} | 
+          Failed: {getTaskStats().failed} | 
+          Pending: {getTaskStats().initial}
+        </p>
+      </div>
       
       <button className="reset-button" onClick={resetSchedule}>
         Reset Schedule

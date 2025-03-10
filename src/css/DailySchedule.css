@@ -10,16 +10,28 @@ h1 {
   color: #333;
 }
 
-.schedule-description {
+.info-container {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  gap: 20px;
+}
+
+.schedule-description, .schedule-info {
+  flex: 1;
   text-align: center;
   color: #666;
-  margin-bottom: 20px;
   font-size: 16px;
   font-weight: 500;
   background-color: rgba(33, 150, 243, 0.1);
   padding: 8px;
   border-radius: 4px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 0;
+}
+
+.schedule-info {
+  background-color: rgba(76, 175, 80, 0.1);
 }
 
 .reset-button {
