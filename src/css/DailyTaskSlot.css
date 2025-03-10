@@ -101,7 +101,9 @@
 /* 任务状态控制 */
 .daily-task-slot .task-status-controls {
   display: flex;
-  margin-right: 5px;
+  gap: 0;
+  margin: 0;
+  padding: 0;
 }
 
 /* 任务内容 */
@@ -123,33 +125,44 @@
 
 /* 状态按钮 */
 .daily-task-slot .status-btn {
-  width: 24px;
-  height: 24px;
-  border: none;
   background: none;
+  border: 1px solid #ddd;
   cursor: pointer;
+  font-size: 9px;
   padding: 0;
-  margin: 0 2px;
-  font-size: 14px;
-  opacity: 0.5;
+  margin: 0;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.2s ease;
+  position: relative;
+  margin: 0 3px;
+  opacity: 0.7;
 }
 
 .daily-task-slot .status-btn:hover {
-  opacity: 1;
   transform: scale(1.1);
+  background-color: rgba(0, 0, 0, 0.05);
+  opacity: 1;
 }
 
 .daily-task-slot .status-btn.active {
+  border-width: 2px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   opacity: 1;
 }
 
 .daily-task-slot .status-btn:nth-child(1).active {
   color: #4caf50;
+  border-color: #4caf50;
 }
 
 .daily-task-slot .status-btn:nth-child(2).active {
   color: #f44336;
+  border-color: #f44336;
 }
 
 /* 删除按钮 */
