@@ -242,7 +242,7 @@ function DailySchedule() {
 
   return (
     <div className="daily-schedule">
-      <h1>Daily Schedule</h1>
+      <h1>Efficiency Tracker</h1>
       <p className="schedule-description">From 7 AM to 10 PM, each hour divided into three 20-minute segments</p>
       
       <button className="reset-button" onClick={resetSchedule}>
