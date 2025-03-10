@@ -58,6 +58,34 @@ function DailySchedule() {
     return '';
   });
 
+  // 添加当前时间状态
+  const [currentTime, setCurrentTime] = useState(new Date());
+
+  // 更新当前时间的函数
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setCurrentTime(new Date());
+    }, 1000);
+
+    return () => {
+      clearInterval(timer);
+    };
+  }, []);
+
+  // 格式化当前时间的函数
+  const formatCurrentTime = () => {
+    const options = { 
+      weekday: 'long', 
+      year: 'numeric', 
+      month: 'long', 
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      second: '2-digit'
+    };
+    return currentTime.toLocaleDateString(undefined, options);
+  };
+
   // 每当 timeSlots 变化时，保存到 localStorage
   useEffect(() => {
     try {
@@ -243,7 +271,7 @@ function DailySchedule() {
   return (
     <div className="daily-schedule">
       <h1>Efficiency Tracker</h1>
-      <p className="schedule-description">From 7 AM to 10 PM, each hour divided into three 20-minute segments</p>
+      <p className="schedule-description">{formatCurrentTime()}</p>
       
       <button className="reset-button" onClick={resetSchedule}>
         Reset Schedule
