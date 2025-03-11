@@ -25,49 +25,6 @@ function DailySchedule() {
     
     return { startHour, endHour, segmentsPerHour };
   };
-  
-  // 设置 CSS 变量
-  useEffect(() => {
-    const { segmentsPerHour } = getUserSettings();
-    document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
-    
-    // 重新初始化时间槽，确保它们与用户设置一致
-    const freshTimeSlots = initializeTimeSlots();
-    setTimeSlots(freshTimeSlots);
-  }, []);
-
-  // 监听 localStorage 变化
-  useEffect(() => {
-    // 定义事件处理函数
-    const handleStorageChange = (event) => {
-      if (event.key === 'appSettings') {
-        console.log('Settings changed, reinitializing time slots...');
-        
-        // 更新 CSS 变量
-        const { segmentsPerHour } = getUserSettings();
-        document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
-        
-        // 重新初始化时间槽
-        const freshTimeSlots = initializeTimeSlots();
-        setTimeSlots(freshTimeSlots);
-        
-        // 保存到 localStorage
-        try {
-          localStorage.setItem('dailySchedule', JSON.stringify(freshTimeSlots));
-        } catch (error) {
-          console.error('Error saving new time slots:', error);
-        }
-      }
-    };
-    
-    // 添加事件监听器
-    window.addEventListener('storage', handleStorageChange);
-    
-    // 清理函数
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-    };
-  }, []);
 
   // Initialize time slot data
   const initializeTimeSlots = () => {
@@ -109,54 +66,156 @@ function DailySchedule() {
     }
     return slots;
   };
+  
+  // 初始化状态
+  const [timeSlots, setTimeSlots] = useState([]);
+  const [resetMessage, setResetMessage] = useState('');
+  const [dailyTask, setDailyTask] = useState('');
+  const [copiedTasks, setCopiedTasks] = useState([]);
+  const [currentTime, setCurrentTime] = useState(new Date());
+  
+  // 设置 CSS 变量和初始化数据
+  useEffect(() => {
+    const { segmentsPerHour } = getUserSettings();
+    document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
+    
+    // 加载保存的数据
+    loadSavedData();
+  }, []);
 
-  // 初始化状态，尝试从 localStorage 加载数据
-  const [timeSlots, setTimeSlots] = useState(() => {
+  // 加载保存的数据
+  const loadSavedData = () => {
+    // 加载日程表数据
     try {
       const savedData = localStorage.getItem('dailySchedule');
       if (savedData) {
-        console.log('Found saved data in localStorage');
-        return JSON.parse(savedData);
+        console.log('Found saved schedule data in localStorage');
+        const parsedData = JSON.parse(savedData);
+        
+        // 保存当前任务数据
+        const currentTaskData = {};
+        parsedData.forEach((hourSlots) => {
+          hourSlots.forEach((slot) => {
+            if (slot.task) {
+              // 使用时间作为键来保存任务
+              currentTaskData[slot.time] = slot.task;
+            }
+          });
+        });
+        
+        // 重新初始化时间槽（确保使用最新设置）
+        const freshTimeSlots = initializeTimeSlots();
+        
+        // 将保存的任务数据映射回新的时间槽
+        const updatedTimeSlots = freshTimeSlots.map((hourSlots) => {
+          return hourSlots.map((slot) => {
+            // 检查是否有匹配的时间槽任务
+            if (currentTaskData[slot.time]) {
+              return { ...slot, task: currentTaskData[slot.time] };
+            }
+            return slot;
+          });
+        });
+        
+        // 更新状态
+        setTimeSlots(updatedTimeSlots);
+      } else {
+        // 如果没有保存的数据，则使用默认初始化
+        console.log('No saved schedule data found, initializing with default data');
+        const freshTimeSlots = initializeTimeSlots();
+        setTimeSlots(freshTimeSlots);
       }
     } catch (error) {
-      console.error('Error loading saved data:', error);
+      console.error('Error loading saved schedule data:', error);
+      // 如果出错，则使用默认初始化
+      const freshTimeSlots = initializeTimeSlots();
+      setTimeSlots(freshTimeSlots);
     }
-    console.log('No saved data found, initializing with default data');
-    return initializeTimeSlots();
-  });
-
-  const [resetMessage, setResetMessage] = useState('');
-
-  // 初始化每日任务，尝试从 localStorage 加载数据
-  const [dailyTask, setDailyTask] = useState(() => {
+    
+    // 加载每日任务数据
     try {
       const savedDailyTask = localStorage.getItem('dailyTask');
       if (savedDailyTask) {
         console.log('Found saved daily task in localStorage');
-        return savedDailyTask;
+        setDailyTask(savedDailyTask);
       }
     } catch (error) {
       console.error('Error loading saved daily task:', error);
     }
-    console.log('No saved daily task found, initializing with empty string');
-    return '';
-  });
-
-  // 添加一个状态来全局跟踪已复制的任务
-  const [copiedTasks, setCopiedTasks] = useState(() => {
+    
+    // 加载已复制任务数据
     try {
       const savedCopiedTasks = localStorage.getItem('copiedTasks');
       if (savedCopiedTasks) {
-        return JSON.parse(savedCopiedTasks);
+        console.log('Found saved copied tasks in localStorage');
+        setCopiedTasks(JSON.parse(savedCopiedTasks));
       }
     } catch (error) {
       console.error('Error loading copied tasks:', error);
     }
-    return [];
-  });
+  };
 
-  // 添加当前时间状态
-  const [currentTime, setCurrentTime] = useState(new Date());
+  // 监听 localStorage 变化
+  useEffect(() => {
+    // 定义事件处理函数
+    const handleStorageChange = (event) => {
+      if (event.key === 'appSettings') {
+        console.log('Settings changed, reinitializing time slots...');
+        
+        // 更新 CSS 变量
+        const { segmentsPerHour } = getUserSettings();
+        document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
+        
+        // 保存当前任务数据
+        const currentTaskData = {};
+        
+        // 只有当 timeSlots 有数据时才处理
+        if (timeSlots && timeSlots.length > 0) {
+          timeSlots.forEach((hourSlots) => {
+            hourSlots.forEach((slot) => {
+              if (slot.task) {
+                // 使用时间作为键来保存任务
+                currentTaskData[slot.time] = slot.task;
+              }
+            });
+          });
+        }
+        
+        // 重新初始化时间槽
+        const freshTimeSlots = initializeTimeSlots();
+        
+        // 将保存的任务数据映射回新的时间槽
+        const updatedTimeSlots = freshTimeSlots.map((hourSlots) => {
+          return hourSlots.map((slot) => {
+            // 检查是否有匹配的时间槽任务
+            if (currentTaskData[slot.time]) {
+              return { ...slot, task: currentTaskData[slot.time] };
+            }
+            return slot;
+          });
+        });
+        
+        // 更新状态
+        setTimeSlots(updatedTimeSlots);
+        
+        // 保存到 localStorage
+        try {
+          localStorage.setItem('dailySchedule', JSON.stringify(updatedTimeSlots));
+          console.log('Updated time slots saved to localStorage');
+        } catch (error) {
+          console.error('Error saving new time slots:', error);
+        }
+      }
+    };
+    
+    // 添加事件监听器
+    window.addEventListener('storage', handleStorageChange);
+    
+    // 清理函数
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, [timeSlots]);
 
   // 更新当前时间的函数
   useEffect(() => {
@@ -191,42 +250,77 @@ function DailySchedule() {
           // 解析任务字符串，提取任务和状态
           const taskItems = slot.task.split('\n').filter(item => item.trim() !== '');
           
-          taskItems.forEach(taskItem => {
-            // 提取任务内容（不包含状态信息）
-            const taskContent = taskItem.split(' [STATUS:')[0];
-            
-            // 提取状态信息
-            let status = 'initial';
-            if (taskItem.includes('[STATUS:completed]')) {
-              status = 'completed';
-            } else if (taskItem.includes('[STATUS:failed]')) {
-              status = 'failed';
-            }
-            
-            // 更新任务状态Map
-            if (!taskStatusMap.has(taskContent)) {
-              // 如果是新任务，直接添加状态
-              taskStatusMap.set(taskContent, status);
-            } else {
-              // 如果任务已存在，根据规则更新状态
-              const currentStatus = taskStatusMap.get(taskContent);
+          taskItems.forEach(item => {
+            // 提取任务内容和状态
+            const statusMatch = item.match(/\[STATUS:(.*?)\]/);
+            if (statusMatch) {
+              const status = statusMatch[1];
+              // 提取任务内容（不包含状态信息）
+              const taskContent = item.replace(/\[STATUS:.*?\]/, '').trim();
               
-              // 规则1：如果有任何一个实例是completed，则整个任务计为completed
-              if (status === 'completed' || currentStatus === 'completed') {
-                taskStatusMap.set(taskContent, 'completed');
+              // 如果任务已经存在于Map中，只有当新状态优先级更高时才更新
+              if (taskStatusMap.has(taskContent)) {
+                const currentStatus = taskStatusMap.get(taskContent);
+                // 状态优先级: completed > failed > initial
+                if (
+                  (status === 'completed') || 
+                  (status === 'failed' && currentStatus === 'initial')
+                ) {
+                  taskStatusMap.set(taskContent, status);
+                }
+              } else {
+                // 如果任务不存在于Map中，添加它
+                taskStatusMap.set(taskContent, status);
               }
-              // 规则2：如果有任何一个实例是pending，且没有completed，则整个任务计为pending
-              else if (status === 'initial' || currentStatus === 'initial') {
+            } else {
+              // 如果没有状态信息，将其视为初始状态
+              const taskContent = item.trim();
+              if (!taskStatusMap.has(taskContent)) {
                 taskStatusMap.set(taskContent, 'initial');
               }
-              // 规则3：其他情况（都是failed）保持为failed
             }
           });
         }
       });
     });
 
-    // 统计各状态的任务数量
+    // 统计每日任务
+    if (dailyTask) {
+      const dailyTaskItems = dailyTask.split('\n').filter(item => item.trim() !== '');
+      
+      dailyTaskItems.forEach(item => {
+        // 提取任务内容和状态
+        const statusMatch = item.match(/\[STATUS:(.*?)\]/);
+        if (statusMatch) {
+          const status = statusMatch[1];
+          // 提取任务内容（不包含状态信息）
+          const taskContent = item.replace(/\[STATUS:.*?\]/, '').trim();
+          
+          // 如果任务已经存在于Map中，只有当新状态优先级更高时才更新
+          if (taskStatusMap.has(taskContent)) {
+            const currentStatus = taskStatusMap.get(taskContent);
+            // 状态优先级: completed > failed > initial
+            if (
+              (status === 'completed') || 
+              (status === 'failed' && currentStatus === 'initial')
+            ) {
+              taskStatusMap.set(taskContent, status);
+            }
+          } else {
+            // 如果任务不存在于Map中，添加它
+            taskStatusMap.set(taskContent, status);
+          }
+        } else {
+          // 如果没有状态信息，将其视为初始状态
+          const taskContent = item.trim();
+          if (!taskStatusMap.has(taskContent)) {
+            taskStatusMap.set(taskContent, 'initial');
+          }
+        }
+      });
+    }
+
+    // 计算各种状态的任务数量
     let completedTasks = 0;
     let failedTasks = 0;
     let initialTasks = 0;
@@ -251,11 +345,14 @@ function DailySchedule() {
 
   // 每当 timeSlots 变化时，保存到 localStorage
   useEffect(() => {
-    try {
-      console.log('Saving timeSlots to localStorage');
-      localStorage.setItem('dailySchedule', JSON.stringify(timeSlots));
-    } catch (error) {
-      console.error('Error saving timeSlots to localStorage:', error);
+    // 只有当 timeSlots 有数据时才保存
+    if (timeSlots && timeSlots.length > 0) {
+      try {
+        console.log('Saving timeSlots to localStorage');
+        localStorage.setItem('dailySchedule', JSON.stringify(timeSlots));
+      } catch (error) {
+        console.error('Error saving timeSlots to localStorage:', error);
+      }
     }
   }, [timeSlots]);
 
@@ -268,6 +365,16 @@ function DailySchedule() {
       console.error('Error saving dailyTask to localStorage:', error);
     }
   }, [dailyTask]);
+
+  // 每当 copiedTasks 变化时，保存到 localStorage
+  useEffect(() => {
+    try {
+      console.log('Saving copiedTasks to localStorage');
+      localStorage.setItem('copiedTasks', JSON.stringify(copiedTasks));
+    } catch (error) {
+      console.error('Error saving copiedTasks to localStorage:', error);
+    }
+  }, [copiedTasks]);
 
   // 添加页面卸载前的保存逻辑
   useEffect(() => {
@@ -422,17 +529,19 @@ function DailySchedule() {
     if (confirmReset) {
       console.log('Resetting all time slots and daily task...');
       
-      // 创建全新的时间段数据
+      // 创建全新的时间段数据，使用当前设置
       const freshTimeSlots = initializeTimeSlots();
       
       // 更新状态
       setTimeSlots(freshTimeSlots);
       setDailyTask('');
+      setCopiedTasks([]);
       
       // 清除 localStorage 中的数据
       try {
         localStorage.removeItem('dailySchedule');
         localStorage.removeItem('dailyTask');
+        localStorage.removeItem('copiedTasks');
         
         // 清除所有相关的本地存储数据
         const keys = Object.keys(localStorage);
@@ -445,6 +554,7 @@ function DailySchedule() {
         // 重新保存空数据
         localStorage.setItem('dailySchedule', JSON.stringify(freshTimeSlots));
         localStorage.setItem('dailyTask', '');
+        localStorage.setItem('copiedTasks', JSON.stringify([]));
         
         console.log('All tasks and schedule data have been reset');
         
