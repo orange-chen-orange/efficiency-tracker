@@ -3,7 +3,7 @@
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  height: 15px;
+  height: 4px;
   display: flex;
   align-items: center;
 }
@@ -35,37 +35,37 @@
   top: 0;
 }
 
-/* 大屏幕 (1200px以上) */
+/* Large screens (above 1200px) */
 @media (min-width: 1201px) {
   .time-line-container {
-    height: 15px;
+    height: 4px;
   }
 }
 
-/* 中等屏幕 (992px - 1200px) */
+/* Medium screens (992px - 1200px) */
 @media (max-width: 1200px) {
   .time-line-container {
-    height: 12px;
+    height: 4px;
   }
 }
 
-/* 平板电脑 (768px - 991px) */
+/* Tablets (768px - 991px) */
 @media (max-width: 991px) and (min-width: 768px) {
   .time-line-container {
-    height: 10px;
+    height: 4px;
   }
 }
 
-/* 手机 (小于768px) */
+/* Mobile phones (below 768px) */
 @media (max-width: 767px) {
   .time-line-container {
-    height: 8px;
+    height: 4px;
   }
 }
 
-/* 小手机 (小于480px) */
+/* Small mobile phones (below 480px) */
 @media (max-width: 479px) {
   .time-line-container {
-    height: 6px;
+    height: 4px;
   }
 } 
