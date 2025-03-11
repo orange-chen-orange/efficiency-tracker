@@ -20,17 +20,17 @@
 
 .time-slot.status-completed {
   border-left: 6px solid #4caf50;
-  background-color: rgba(76, 175, 80, 0.05);
+  background-color: rgba(76, 175, 80, 0.5);
 }
 
 .time-slot.status-failed {
   border-left: 6px solid #f44336;
-  background-color: rgba(244, 67, 54, 0.05);
+  background-color: rgba(244, 67, 54, 0.5);
 }
 
 .time-slot.status-mixed {
   border-left: 6px solid #ffc107;
-  background-color: rgba(255, 193, 7, 0.05);
+  background-color: rgba(255, 193, 7, 0.5);
 }
 
 .time-slot:hover {
