@@ -164,13 +164,27 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
   // Handle task status change
   const handleTaskStatusChange = (index, newStatus) => {
     const currentStatus = taskStatuses[index];
+    const taskContent = tasks[index];
     
     // If clicked on current status, toggle back to initial
     if (currentStatus === newStatus) {
       newStatus = STATUS_INITIAL;
+    } else if (newStatus === STATUS_FAILED && copyTaskToCurrent && time !== "Daily Tasks") {
+      // 如果任务状态变为失败，并且有复制功能，则询问用户是否要复制任务
+      // 先检查当前时间段是否已经包含该任务
+      if (isTaskInCurrentTimeSlot && isTaskInCurrentTimeSlot(taskContent)) {
+        console.log(`Task "${taskContent}" already exists in current time slot, skipping confirmation dialog`);
+      } else {
+        // 显示确认弹窗
+        const shouldCopy = window.confirm(`Do you want to copy the task "${taskContent}" to the current time slot?`);
+        
+        // 如果用户确认，则复制任务
+        if (shouldCopy) {
+          // 复制任务到当前时间段
+          copyTaskToCurrent(`${taskContent} [STATUS:${STATUS_INITIAL}]`);
+        }
+      }
     }
-    
-    // Remove the part that automatically copies tasks when status changes from failed to initial
     
     // Update status
     const newStatuses = [...taskStatuses];
