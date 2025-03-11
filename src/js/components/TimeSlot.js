@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import '../../css/TimeSlot.css';
 
-function TimeSlot({ time, task, onTaskChange }) {
+function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [], isTaskInCurrentTimeSlot }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTask, setCurrentTask] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -164,12 +164,37 @@ function TimeSlot({ time, task, onTaskChange }) {
   // Handle task status change
   const handleTaskStatusChange = (index, newStatus) => {
     const newStatuses = [...taskStatuses];
+    const oldStatus = newStatuses[index];
+    const taskContent = tasks[index];
     
     // 如果点击的是当前状态，切换回初始状态
     if (newStatuses[index] === newStatus) {
       newStatuses[index] = STATUS_INITIAL;
+      
+      // 移除在状态从failed变回initial时自动复制任务的部分
+      // if ((oldStatus === STATUS_COMPLETED || oldStatus === STATUS_FAILED) && copyTaskToCurrent && time !== "Daily Tasks") {
+      //   // 复制任务到当前时间段
+      //   copyTaskToCurrent(`${taskContent} [STATUS:${STATUS_INITIAL}]`);
+      // }
     } else {
       newStatuses[index] = newStatus;
+      
+      // 如果任务状态变为失败，并且有复制功能，则询问用户是否要复制任务
+      if (newStatus === STATUS_FAILED && copyTaskToCurrent && time !== "Daily Tasks") {
+        // 先检查当前时间段是否已经包含该任务
+        if (isTaskInCurrentTimeSlot && isTaskInCurrentTimeSlot(taskContent)) {
+          console.log(`Task "${taskContent}" already exists in current time slot, skipping confirmation dialog`);
+        } else {
+          // 显示确认弹窗
+          const shouldCopy = window.confirm(`是否要将任务 "${taskContent}" 复制到当前时间段？`);
+          
+          // 如果用户确认，则复制任务
+          if (shouldCopy) {
+            // 复制任务到当前时间段
+            copyTaskToCurrent(`${taskContent} [STATUS:${STATUS_INITIAL}]`);
+          }
+        }
+      }
     }
     
     setTaskStatuses(newStatuses);
@@ -200,10 +225,16 @@ function TimeSlot({ time, task, onTaskChange }) {
   const deleteTask = (index) => {
     const newTasks = [...tasks];
     const newStatuses = [...taskStatuses];
+    
+    // 在删除前获取任务内容
+    const taskContent = newTasks[index];
+    
     newTasks.splice(index, 1);
     newStatuses.splice(index, 1);
     setTasks(newTasks);
     setTaskStatuses(newStatuses);
+    
+    // 不需要更新已复制任务列表，因为这个列表现在是在父组件中管理的
     
     // Combine tasks and status information into a string
     const combinedTaskString = combineTasksAndStatuses(newTasks, newStatuses);
@@ -257,7 +288,6 @@ function TimeSlot({ time, task, onTaskChange }) {
   return (
     <div className={`time-slot status-${containerStatus}`}>
       {time !== "Daily Tasks" && <div className="time-display">{time}</div>}
-      
       <div className="task-container">
         {isEditing !== false ? (
           <div className="task-edit">
