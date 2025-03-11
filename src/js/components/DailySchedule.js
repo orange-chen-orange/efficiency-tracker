@@ -81,6 +81,7 @@ function DailySchedule() {
     
     // 加载保存的数据
     loadSavedData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // 加载保存的数据
@@ -215,6 +216,7 @@ function DailySchedule() {
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeSlots]);
 
   // 更新当前时间的函数
@@ -576,7 +578,7 @@ function DailySchedule() {
     const mainContent = [];
     
     // 获取用户设置的时间范围
-    const { startHour, endHour, segmentsPerHour } = getUserSettings();
+    const { startHour, segmentsPerHour } = getUserSettings();
     
     // Add header row
     mainContent.push(
