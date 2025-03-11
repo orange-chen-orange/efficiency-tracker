@@ -5,19 +5,103 @@ import DailyTaskSlot from './DailyTaskSlot';
 import '../../css/DailySchedule.css';
 
 function DailySchedule() {
+  // 获取用户设置
+  const getUserSettings = () => {
+    let startHour = 7;
+    let endHour = 22;
+    let segmentsPerHour = 3;
+    
+    try {
+      const savedSettings = localStorage.getItem('appSettings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        startHour = settings.startHour;
+        endHour = settings.endHour;
+        segmentsPerHour = settings.segmentsPerHour;
+      }
+    } catch (error) {
+      console.error('Reading settings error:', error);
+    }
+    
+    return { startHour, endHour, segmentsPerHour };
+  };
+  
+  // 设置 CSS 变量
+  useEffect(() => {
+    const { segmentsPerHour } = getUserSettings();
+    document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
+    
+    // 重新初始化时间槽，确保它们与用户设置一致
+    const freshTimeSlots = initializeTimeSlots();
+    setTimeSlots(freshTimeSlots);
+  }, []);
+
+  // 监听 localStorage 变化
+  useEffect(() => {
+    // 定义事件处理函数
+    const handleStorageChange = (event) => {
+      if (event.key === 'appSettings') {
+        console.log('Settings changed, reinitializing time slots...');
+        
+        // 更新 CSS 变量
+        const { segmentsPerHour } = getUserSettings();
+        document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
+        
+        // 重新初始化时间槽
+        const freshTimeSlots = initializeTimeSlots();
+        setTimeSlots(freshTimeSlots);
+        
+        // 保存到 localStorage
+        try {
+          localStorage.setItem('dailySchedule', JSON.stringify(freshTimeSlots));
+        } catch (error) {
+          console.error('Error saving new time slots:', error);
+        }
+      }
+    };
+    
+    // 添加事件监听器
+    window.addEventListener('storage', handleStorageChange);
+    
+    // 清理函数
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+    };
+  }, []);
+
   // Initialize time slot data
   const initializeTimeSlots = () => {
+    // 尝试从localStorage读取用户设置
+    const { startHour, endHour, segmentsPerHour } = getUserSettings();
+    
     const slots = [];
-    // From 7 AM to 9 PM, divide each hour into 3 parts
-    for (let hour = 7; hour <= 21; hour++) {
+    // 使用用户设置的时间范围和分段
+    for (let hour = startHour; hour < endHour; hour++) {
       const hourSlots = [];
-      for (let segment = 0; segment < 3; segment++) {
-        const startMinute = segment * 20;
-        const endMinute = startMinute + 20;
+      // 计算每个分段的分钟数
+      const minutesPerSegment = 60 / segmentsPerHour;
+      
+      for (let segment = 0; segment < segmentsPerHour; segment++) {
+        const startMinute = segment * minutesPerSegment;
+        const endMinute = startMinute + minutesPerSegment;
+        
+        // 格式化分钟显示
+        const formattedStartMinute = startMinute === 0 ? '00' : startMinute;
+        
+        // 处理结束时间，如果是60分钟，则显示为下一个小时的0分钟
+        let formattedEndHour = hour;
+        let formattedEndMinute = endMinute;
+        
+        if (endMinute === 60) {
+          formattedEndHour = hour + 1;
+          formattedEndMinute = 0;
+        }
+        
+        const formattedEndMinuteStr = formattedEndMinute === 0 ? '00' : formattedEndMinute;
         
         hourSlots.push({
           id: `${hour}-${segment}`,
-          time: `${hour}:${startMinute === 0 ? '00' : startMinute} - ${hour}:${endMinute === 0 ? '00' : endMinute}`,
+          time: `${hour}:${formattedStartMinute} - ${formattedEndHour}:${formattedEndMinuteStr}`,
           task: '',
         });
       }
@@ -210,16 +294,22 @@ function DailySchedule() {
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     
-    // 检查当前时间是否在我们的时间范围内（7:00-22:00）
-    if (currentHour < 7 || currentHour > 21) {
+    // 获取用户设置的时间范围
+    const { startHour, endHour, segmentsPerHour } = getUserSettings();
+    
+    // 检查当前时间是否在用户设置的时间范围内
+    if (currentHour < startHour || currentHour >= endHour) {
       return null;
     }
     
-    // 计算小时索引（相对于7点开始）
-    const hourIndex = currentHour - 7;
+    // 计算小时索引（相对于起始时间）
+    const hourIndex = currentHour - startHour;
     
-    // 确定当前分钟对应的时间段（每20分钟一个时间段）
-    const segmentIndex = Math.floor(currentMinute / 20);
+    // 计算每个分段的分钟数
+    const minutesPerSegment = 60 / segmentsPerHour;
+    
+    // 确定当前分钟对应的时间段
+    const segmentIndex = Math.floor(currentMinute / minutesPerSegment);
     
     return { hourIndex, segmentIndex };
   };
@@ -261,11 +351,11 @@ function DailySchedule() {
       return;
     }
     
-    // 移除对已复制任务的检查，允许多次复制同一任务
-    // if (copiedTasks.includes(taskContent)) {
-    //   console.log(`Task "${taskContent}" has already been copied`);
-    //   return;
-    // }
+    // 检查任务是否已经存在于当前时间段
+    if (isTaskInCurrentTimeSlot(taskContent)) {
+      console.log(`Task "${taskContent}" is already in the current time slot`);
+      return;
+    }
     
     const { hourIndex, segmentIndex } = currentSlot;
     
@@ -375,14 +465,24 @@ function DailySchedule() {
   const renderTimeSlots = () => {
     const mainContent = [];
     
+    // 获取用户设置的时间范围
+    const { startHour, endHour, segmentsPerHour } = getUserSettings();
+    
     // Add header row
     mainContent.push(
       <div className="schedule-row header-row" key="header">
         <div className="daily-task-header">Daily Task</div>
         <div className="time-header">Time</div>
-        <div className="segment-header">0-20 minutes</div>
-        <div className="segment-header">20-40 minutes</div>
-        <div className="segment-header">40-60 minutes</div>
+        {Array.from({ length: segmentsPerHour }, (_, i) => {
+          const minutesPerSegment = 60 / segmentsPerHour;
+          const startMinute = Math.floor(i * minutesPerSegment);
+          const endMinute = Math.floor((i + 1) * minutesPerSegment);
+          return (
+            <div className="segment-header" key={`segment-${i}`}>
+              {startMinute}-{endMinute} minutes
+            </div>
+          );
+        })}
       </div>
     );
     
@@ -391,7 +491,7 @@ function DailySchedule() {
     
     // Add rows for each hour
     timeSlots.forEach((hourSlots, hourIndex) => {
-      const actualHour = 7 + hourIndex;
+      const actualHour = startHour + hourIndex;
       
       // 在每个小时行前方添加时间线
       timeSlotRows.push(

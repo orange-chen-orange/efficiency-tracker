@@ -1,4 +1,4 @@
-/* 基本样式，类似于 TimeSlot 但有特定修改 */
+/* Basic styles, similar to TimeSlot but with specific modifications */
 .daily-task-slot {
   display: flex;
   flex-direction: column;
@@ -8,12 +8,12 @@
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
-  height: auto; /* 自适应高度 */
-  min-height: auto; /* 自适应高度 */
+  height: auto; /* Adaptive height */
+  min-height: auto; /* Adaptive height */
   box-sizing: border-box;
 }
 
-/* 状态样式 */
+/* Status styles */
 .daily-task-slot.status-initial {
   border-left: 6px solid #2196f3;
   background-color: rgba(33, 150, 243, 0.05);
@@ -34,21 +34,21 @@
   background-color: rgba(255, 193, 7, 0.05);
 }
 
-/* 任务容器 - 调整布局 */
+/* Task container - adjust layout */
 .daily-task-slot .task-container {
+  flex: 1;
   display: flex;
   flex-direction: column;
   position: relative;
-  min-height: 100px; /* 设置最小高度 */
+  min-height: 100px; /* Set minimum height */
   background-color: transparent;
   border-radius: 4px;
-  padding: 8px; /* 添加一些内边距 */
+  padding: 8px; /* Add some padding */
   margin: 0;
-  overflow-y: visible; /* 改为 visible，避免内容被截断 */
-  height: 100%; /* 占据整个高度 */
+  overflow-y: visible; /* Change to visible to avoid content being cut off */
 }
 
-/* 任务列表 - 不再使用 flex: 1 占满空间 */
+/* Task list - no longer use flex: 1 to occupy space */
 .daily-task-slot .tasks-list {
   display: flex;
   flex-direction: column;
@@ -56,19 +56,19 @@
   margin: 0;
   padding: 0 2px;
   margin-bottom: 0;
-  width: 100%; /* 确保宽度占满 */
-  align-self: flex-start; /* 靠上对齐 */
-  min-height: auto; /* 自适应高度 */
-  height: auto; /* 自适应高度 */
+  width: 100%; /* Ensure width occupies space */
+  align-self: flex-start; /* Align top */
+  min-height: auto; /* Adaptive height */
+  height: auto; /* Adaptive height */
 }
 
-/* 当有任务列表时，调整容器内的按钮位置 */
+/* When there is a task list, adjust the button position in the container */
 .daily-task-slot .tasks-list + .add-task-btn {
-  margin-top: 5px; /* 添加上边距 */
-  align-self: center; /* 水平居中 */
+  margin-top: 5px; /* Add top margin */
+  align-self: center; /* Horizontal center */
 }
 
-/* 任务项 */
+/* Task item */
 .daily-task-slot .task-item {
   display: flex;
   align-items: center;
@@ -79,8 +79,8 @@
   transition: all 0.2s ease;
   border-left: 6px solid #2196f3;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  min-height: auto; /* 自适应高度 */
-  height: auto; /* 自适应高度 */
+  min-height: auto; /* Adaptive height */
+  height: auto; /* Adaptive height */
 }
 
 .daily-task-slot .task-item.status-completed {
@@ -98,7 +98,7 @@
   border-left: 6px solid #2196f3;
 }
 
-/* 任务状态控制 */
+/* Task status control */
 .daily-task-slot .task-status-controls {
   display: flex;
   gap: 0;
@@ -106,7 +106,7 @@
   padding: 0;
 }
 
-/* 任务内容 */
+/* Task content */
 .daily-task-slot .task-content {
   flex: 1;
   cursor: pointer;
@@ -118,12 +118,12 @@
   justify-content: flex-start;
   display: flex;
   align-items: center;
-  min-height: auto; /* 自适应高度 */
-  height: auto; /* 自适应高度 */
-  line-height: 1.2; /* 控制行高 */
+  min-height: auto; /* Adaptive height */
+  height: auto; /* Adaptive height */
+  line-height: 1.2; /* Control line height */
 }
 
-/* 状态按钮 */
+/* Status button */
 .daily-task-slot .status-btn {
   background: none;
   border: 1px solid #ddd;
@@ -165,7 +165,7 @@
   border-color: #f44336;
 }
 
-/* 删除按钮 */
+/* Delete button */
 .daily-task-slot .delete-task-btn {
   background: none;
   border: none;
@@ -183,7 +183,7 @@
   transform: scale(1.1);
 }
 
-/* 添加按钮 - 初始状态在中间 */
+/* Add button - initial state in the middle */
 .daily-task-slot .add-task-btn {
   position: absolute;
   width: 30px;
@@ -212,7 +212,7 @@
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* 当有任务时，按钮样式 */
+/* When there is a task, button style */
 .daily-task-slot .tasks-list + .add-task-btn {
   position: relative;
   top: auto;
@@ -226,13 +226,13 @@
   transform: scale(1.1);
 }
 
-/* 编辑框 */
+/* Edit box */
 .daily-task-slot .task-edit {
   display: flex;
-  padding: 2px; /* 减小内边距 */
-  margin: 2px 0; /* 减小外边距 */
-  width: 100%; /* 确保宽度占满 */
-  box-sizing: border-box; /* 确保内边距不会增加宽度 */
+  padding: 2px; /* Reduce padding */
+  margin: 2px 0; /* Reduce outer margin */
+  width: 100%; /* Ensure width occupies space */
+  box-sizing: border-box; /* Ensure padding does not increase width */
 }
 
 .daily-task-slot .task-edit input {
@@ -241,28 +241,28 @@
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 14px;
-  min-width: 0; /* 允许输入框缩小 */
-  width: 100%; /* 尽可能占据更多空间 */
+  min-width: 0; /* Allow input box to shrink */
+  width: 100%; /* Try to occupy more space */
 }
 
 .daily-task-slot .task-edit button {
   margin-left: 5px;
-  padding: 8px 8px; /* 减小按钮内边距 */
+  padding: 8px 8px; /* Reduce button padding */
   background-color: #2196f3;
   color: white;
   border: none;
   border-radius: 4px;
   cursor: pointer;
   font-size: 14px;
-  white-space: nowrap; /* 防止文本换行 */
-  min-width: 60px; /* 设置最小宽度 */
+  white-space: nowrap; /* Prevent text from wrapping */
+  min-width: 60px; /* Set minimum width */
 }
 
 .daily-task-slot .task-edit button:hover {
   background-color: #1976d2;
 }
 
-/* 媒体查询 */
+/* Media query */
 @media (max-width: 1200px) {
   .daily-task-slot {
     padding: 0;
@@ -303,16 +303,16 @@
   }
   
   .daily-task-slot .task-edit {
-    padding: 1px; /* 更小的内边距 */
-    margin: 1px 0; /* 更小的外边距 */
+    padding: 1px; /* Smaller padding */
+    margin: 1px 0; /* Smaller outer margin */
   }
   
   .daily-task-slot .task-edit input, .daily-task-slot .task-edit button {
     font-size: 12px;
-    padding: 4px; /* 更小的内边距 */
+    padding: 4px; /* Smaller padding */
   }
   
   .daily-task-slot .task-edit button {
-    min-width: 50px; /* 更小的最小宽度 */
+    min-width: 50px; /* Smaller minimum width */
   }
 } 

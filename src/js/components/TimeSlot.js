@@ -47,7 +47,7 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
       setTasks(extractedTasks);
       setTaskStatuses(extractedStatuses);
     } else {
-      // 如果 task 为空，清空任务列表和状态
+      // If task is empty, clear task list and status
       console.log('Task is empty, clearing tasks and statuses');
       setTasks([]);
       setTaskStatuses([]);
@@ -55,15 +55,15 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
     }
   }, [task, STATUS_INITIAL, time]);
 
-  // 更新容器状态
+  // Update container status
   useEffect(() => {
     updateContainerStatus(taskStatuses);
   }, [taskStatuses]);
 
-  // 检查所有任务状态并更新容器背景色
+  // Check all task statuses and update container background color
   const updateContainerStatus = (statuses) => {
     if (statuses.length === 0) {
-      // 如果没有任务，设置为初始状态
+      // If there are no tasks, set to initial status
       setContainerStatus(STATUS_INITIAL);
       return;
     }
@@ -72,7 +72,7 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
     const hasFailed = statuses.includes(STATUS_FAILED);
     const hasInitial = statuses.includes(STATUS_INITIAL);
     
-    // 检查是否所有任务都是同一状态
+    // Check if all tasks have the same status
     const allCompleted = statuses.every(status => status === STATUS_COMPLETED);
     const allFailed = statuses.every(status => status === STATUS_FAILED);
     const allInitial = statuses.every(status => status === STATUS_INITIAL);
@@ -84,7 +84,7 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
     } else if (allInitial) {
       setContainerStatus(STATUS_INITIAL);
     } else {
-      // 混合状态
+      // Mixed status
       setContainerStatus(STATUS_MIXED);
     }
   };
@@ -151,7 +151,7 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
       console.log('Calling onTaskChange with:', combinedTaskString);
       onTaskChange(combinedTaskString);
       
-      // 更新容器状态
+      // Update container status
       updateContainerStatus(newStatuses);
     } else {
       console.log('Task is empty, not saving');
@@ -163,48 +163,26 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
 
   // Handle task status change
   const handleTaskStatusChange = (index, newStatus) => {
-    const newStatuses = [...taskStatuses];
-    const oldStatus = newStatuses[index];
-    const taskContent = tasks[index];
+    const currentStatus = taskStatuses[index];
     
-    // 如果点击的是当前状态，切换回初始状态
-    if (newStatuses[index] === newStatus) {
-      newStatuses[index] = STATUS_INITIAL;
-      
-      // 移除在状态从failed变回initial时自动复制任务的部分
-      // if ((oldStatus === STATUS_COMPLETED || oldStatus === STATUS_FAILED) && copyTaskToCurrent && time !== "Daily Tasks") {
-      //   // 复制任务到当前时间段
-      //   copyTaskToCurrent(`${taskContent} [STATUS:${STATUS_INITIAL}]`);
-      // }
-    } else {
-      newStatuses[index] = newStatus;
-      
-      // 如果任务状态变为失败，并且有复制功能，则询问用户是否要复制任务
-      if (newStatus === STATUS_FAILED && copyTaskToCurrent && time !== "Daily Tasks") {
-        // 先检查当前时间段是否已经包含该任务
-        if (isTaskInCurrentTimeSlot && isTaskInCurrentTimeSlot(taskContent)) {
-          console.log(`Task "${taskContent}" already exists in current time slot, skipping confirmation dialog`);
-        } else {
-          // 显示确认弹窗
-          const shouldCopy = window.confirm(`是否要将任务 "${taskContent}" 复制到当前时间段？`);
-          
-          // 如果用户确认，则复制任务
-          if (shouldCopy) {
-            // 复制任务到当前时间段
-            copyTaskToCurrent(`${taskContent} [STATUS:${STATUS_INITIAL}]`);
-          }
-        }
-      }
+    // If clicked on current status, toggle back to initial
+    if (currentStatus === newStatus) {
+      newStatus = STATUS_INITIAL;
     }
     
+    // Remove the part that automatically copies tasks when status changes from failed to initial
+    
+    // Update status
+    const newStatuses = [...taskStatuses];
+    newStatuses[index] = newStatus;
     setTaskStatuses(newStatuses);
+    
+    // Update container status
+    updateContainerStatus(newStatuses);
     
     // Combine tasks and status information into a string
     const combinedTaskString = combineTasksAndStatuses(tasks, newStatuses);
     onTaskChange(combinedTaskString);
-    
-    // 更新容器状态
-    updateContainerStatus(newStatuses);
   };
 
   // Add new task
@@ -226,7 +204,7 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
     const newTasks = [...tasks];
     const newStatuses = [...taskStatuses];
     
-    // 在删除前获取任务内容
+    // Get task content before deletion
     const taskContent = newTasks[index];
     
     newTasks.splice(index, 1);
@@ -234,13 +212,13 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
     setTasks(newTasks);
     setTaskStatuses(newStatuses);
     
-    // 不需要更新已复制任务列表，因为这个列表现在是在父组件中管理的
+    // No need to update copied tasks list, as this list is now managed in the parent component
     
     // Combine tasks and status information into a string
     const combinedTaskString = combineTasksAndStatuses(newTasks, newStatuses);
     onTaskChange(combinedTaskString);
     
-    // 更新容器状态
+    // Update container status
     updateContainerStatus(newStatuses);
   };
 
