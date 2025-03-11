@@ -286,42 +286,6 @@ function DailySchedule() {
       });
     });
 
-    // 统计每日任务
-    if (dailyTask) {
-      const dailyTaskItems = dailyTask.split('\n').filter(item => item.trim() !== '');
-      
-      dailyTaskItems.forEach(item => {
-        // 提取任务内容和状态
-        const statusMatch = item.match(/\[STATUS:(.*?)\]/);
-        if (statusMatch) {
-          const status = statusMatch[1];
-          // 提取任务内容（不包含状态信息）
-          const taskContent = item.replace(/\[STATUS:.*?\]/, '').trim();
-          
-          // 如果任务已经存在于Map中，只有当新状态优先级更高时才更新
-          if (taskStatusMap.has(taskContent)) {
-            const currentStatus = taskStatusMap.get(taskContent);
-            // 状态优先级: completed > failed > initial
-            if (
-              (status === 'completed') || 
-              (status === 'failed' && currentStatus === 'initial')
-            ) {
-              taskStatusMap.set(taskContent, status);
-            }
-          } else {
-            // 如果任务不存在于Map中，添加它
-            taskStatusMap.set(taskContent, status);
-          }
-        } else {
-          // 如果没有状态信息，将其视为初始状态
-          const taskContent = item.trim();
-          if (!taskStatusMap.has(taskContent)) {
-            taskStatusMap.set(taskContent, 'initial');
-          }
-        }
-      });
-    }
-
     // 计算各种状态的任务数量
     let completedTasks = 0;
     let failedTasks = 0;
