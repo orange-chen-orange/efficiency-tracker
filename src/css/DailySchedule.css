@@ -159,10 +159,20 @@ h1 {
 
 .daily-task-header {
   background-color: #1976d2;
+  border-top-left-radius: 4px;
 }
 
 .time-header:last-child, .segment-header:last-child {
   border-right: none;
+}
+
+.segment-header:last-child {
+  border-top-right-radius: 4px;
+}
+
+/* 修复重复的样式 */
+.time-header:last-child {
+  border-top-right-radius: 4px;
 }
 
 .hour-label {
@@ -216,8 +226,8 @@ h1 {
 .schedule-row .time-slot {
   border-right: 1px solid #e0e0e0;
   margin: 0;
-  border-radius: 0;
-  box-shadow: none;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   height: auto;
   min-height: 60px;
 }
