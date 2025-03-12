@@ -83,11 +83,6 @@ function Settings() {
 
   return (
     <div className="settings-container">
-      <div className="settings-header">
-        <h1>Efficiency Tracker Settings</h1>
-        <p>Customize your schedule and time segments</p>
-      </div>
-      
       <div className="settings-form">
         <div className="form-group">
           <label>Time Range</label>

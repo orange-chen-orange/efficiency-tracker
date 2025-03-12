@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>清除缓存 - Efficiency Tracker</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 20px;
+      text-align: center;
+    }
+    h1 {
+      color: #333;
+    }
+    .button {
+      display: inline-block;
+      background-color: #2196F3;
+      color: white;
+      padding: 10px 20px;
+      margin: 10px;
+      border-radius: 5px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .button:hover {
+      background-color: #0b7dda;
+    }
+    .button.danger {
+      background-color: #f44336;
+    }
+    .button.danger:hover {
+      background-color: #d32f2f;
+    }
+    .log {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #f5f5f5;
+      border-radius: 5px;
+      text-align: left;
+      height: 200px;
+      overflow-y: auto;
+    }
+  </style>
+</head>
+<body>
+  <h1>清除缓存</h1>
+  <p>如果您遇到了问题，可以尝试清除浏览器缓存。</p>
+  
+  <button id="clearCacheBtn" class="button danger">清除所有缓存</button>
+  <a href="/" class="button">返回主页</a>
+  
+  <div class="log" id="logOutput"></div>
+  
+  <script>
+    // 记录日志
+    function log(message) {
+      const logOutput = document.getElementById('logOutput');
+      const logEntry = document.createElement('div');
+      logEntry.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      logOutput.appendChild(logEntry);
+      logOutput.scrollTop = logOutput.scrollHeight;
+    }
+    
+    // 清除缓存
+    document.getElementById('clearCacheBtn').addEventListener('click', function() {
+      log('开始清除缓存...');
+      
+      // 清除Service Worker缓存
+      if ('caches' in window) {
+        caches.keys().then(function(cacheNames) {
+          return Promise.all(
+            cacheNames.map(function(cacheName) {
+              log(`删除缓存: ${cacheName}`);
+              return caches.delete(cacheName);
+            })
+          );
+        }).then(function() {
+          log('所有缓存已清除');
+        });
+      } else {
+        log('浏览器不支持Cache API');
+      }
+      
+      // 清除Service Worker注册
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.getRegistrations().then(function(registrations) {
+          if (registrations.length === 0) {
+            log('没有已注册的Service Worker');
+          } else {
+            for (let registration of registrations) {
+              registration.unregister();
+              log('Service Worker已注销');
+            }
+          }
+        });
+      } else {
+        log('浏览器不支持Service Worker');
+      }
+      
+      // 清除localStorage
+      try {
+        localStorage.clear();
+        log('localStorage已清除');
+      } catch (e) {
+        log(`清除localStorage失败: ${e.message}`);
+      }
+      
+      // 清除sessionStorage
+      try {
+        sessionStorage.clear();
+        log('sessionStorage已清除');
+      } catch (e) {
+        log(`清除sessionStorage失败: ${e.message}`);
+      }
+      
+      log('所有缓存已清除，3秒后将刷新页面...');
+      
+      // 3秒后刷新页面
+      setTimeout(function() {
+        window.location.href = '/';
+      }, 3000);
+    });
+    
+    // 页面加载完成
+    window.addEventListener('load', function() {
+      log('页面已加载，准备清除缓存');
+    });
+  </script>
+</body>
+</html> 

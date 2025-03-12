@@ -66,7 +66,7 @@
   align-items: center;
   justify-content: center;
   color: #999;
-  cursor: pointer;
+  cursor: default;
   min-height: 60px;
   font-size: 16px;
 }
@@ -139,7 +139,7 @@
 .status-btn {
   background: none;
   border: 1px solid #ddd;
-  cursor: pointer;
+  cursor: default;
   font-size: 9px;
   padding: 0;
   margin: 0;
@@ -184,7 +184,7 @@
 
 .task-content {
   flex: 1;
-  cursor: pointer;
+  cursor: default;
   padding: 0;
   margin: 0;
   word-break: break-word;
@@ -202,7 +202,7 @@
   padding: 0;
   color: #f44336;
   font-size: 22px;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.2s ease;
 }
 
@@ -213,8 +213,8 @@
 
 .add-task-btn {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 28px;
+  height: 28px;
   border-radius: 50%;
   background-color: #2196f3;
   color: white;
@@ -222,7 +222,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
+  cursor: default;
   font-size: 20px;
   line-height: 1;
   padding: 0;
@@ -347,7 +347,7 @@
   color: white;
   border: none;
   border-radius: 6px;
-  cursor: pointer;
+  cursor: default;
   font-size: 16px;
 }
 
@@ -407,8 +407,8 @@
   }
   
   .add-task-btn {
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
     font-size: 16px;
   }
   

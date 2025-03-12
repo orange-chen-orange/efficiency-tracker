@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
 import TimeSlot from './TimeSlot';
 import TimeLine from './TimeLine';
 import DailyTaskSlot from './DailyTaskSlot';
 import '../../css/DailySchedule.css';
 
 function DailySchedule() {
-  // 常量定义
-  const TIME_SLOTS_KEY = 'timeSlots';
-  const DAILY_TASKS_KEY = 'dailyTasks';
+  // Constants
   const TASK_HISTORY_KEY = 'taskHistory';
   
-  // 获取用户设置
+  // Get user settings
   const getUserSettings = () => {
     let startHour = 7;
     let endHour = 22;
@@ -34,24 +31,24 @@ function DailySchedule() {
 
   // Initialize time slot data
   const initializeTimeSlots = () => {
-    // 尝试从localStorage读取用户设置
+    // Try to read user settings from localStorage
     const { startHour, endHour, segmentsPerHour } = getUserSettings();
     
     const slots = [];
-    // 使用用户设置的时间范围和分段
+    // Use time range and segments from user settings
     for (let hour = startHour; hour < endHour; hour++) {
       const hourSlots = [];
-      // 计算每个分段的分钟数
+      // Calculate minutes per segment
       const minutesPerSegment = 60 / segmentsPerHour;
       
       for (let segment = 0; segment < segmentsPerHour; segment++) {
         const startMinute = segment * minutesPerSegment;
         const endMinute = startMinute + minutesPerSegment;
         
-        // 格式化分钟显示
+        // Format minute display
         const formattedStartMinute = startMinute === 0 ? '00' : startMinute;
         
-        // 处理结束时间，如果是60分钟，则显示为下一个小时的0分钟
+        // Handle end time, if it's 60 minutes, display as 0 minutes of the next hour
         let formattedEndHour = hour;
         let formattedEndMinute = endMinute;
         
@@ -73,71 +70,140 @@ function DailySchedule() {
     return slots;
   };
   
-  // 初始化状态
+  // Initialize state
   const [timeSlots, setTimeSlots] = useState([]);
   const [resetMessage, setResetMessage] = useState('');
+  const [saveMessage, setSaveMessage] = useState('');
   const [dailyTask, setDailyTask] = useState('');
   const [copiedTasks, setCopiedTasks] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState(null);
   
-  // 设置 CSS 变量和初始化数据
+  // Clean up future dates in history data
+  const cleanupFutureDates = () => {
+    try {
+      const savedHistory = localStorage.getItem(TASK_HISTORY_KEY);
+      if (savedHistory) {
+        const historyData = JSON.parse(savedHistory);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        let hasChanges = false;
+        const cleanedHistory = {};
+        
+        Object.keys(historyData).forEach(dateStr => {
+          try {
+            const date = new Date(dateStr);
+            if (!isNaN(date.getTime()) && date < today) {
+              cleanedHistory[dateStr] = historyData[dateStr];
+            } else {
+              console.log(`Deleting future date data: ${dateStr}`);
+              hasChanges = true;
+            }
+          } catch (e) {
+            console.error(`Processing date ${dateStr} error:`, e);
+            // If date format is invalid, don't keep this data
+            hasChanges = true;
+          }
+        });
+        
+        if (hasChanges) {
+          localStorage.setItem(TASK_HISTORY_KEY, JSON.stringify(cleanedHistory));
+          console.log('Future date data cleared');
+          
+          // Force refresh history component (if exists)
+          if (window.dispatchEvent) {
+            window.dispatchEvent(new Event('storage'));
+          }
+        }
+        
+        return cleanedHistory;
+      }
+    } catch (error) {
+      console.error('Clearing future date data error:', error);
+    }
+    return {};
+  };
+  
+  // Set CSS variables and initialize data
   useEffect(() => {
     const { segmentsPerHour } = getUserSettings();
     document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
     
-    // 加载保存的数据
+    // Clean up future dates in history data
+    cleanupFutureDates();
+    
+    // Load saved data
     loadSavedData();
+    
+    // Set Service Worker message listener
+    if ('serviceWorker' in navigator && navigator.serviceWorker.controller) {
+      // Listen for messages from Service Worker
+      navigator.serviceWorker.addEventListener('message', event => {
+        console.log('Received Service Worker message:', event.data);
+        
+        if (event.data && event.data.action === 'SAVE_DAILY_TASKS') {
+          console.log('Received Service Worker request to save tasks');
+          saveCurrentDayToHistory();
+        }
+      });
+      
+      // Notify Service Worker to set up daily save task
+      navigator.serviceWorker.controller.postMessage({
+        action: 'SETUP_DAILY_SAVE'
+      });
+    }
+    
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // 在组件的初始化部分，添加获取URL参数的逻辑
+  // Add URL parameter handling logic in component initialization
   useEffect(() => {
-    // 检查URL是否包含日期参数
+    // Check if URL contains date parameter
     const urlParams = new URLSearchParams(window.location.search);
     const dateParam = urlParams.get('date');
     
     if (dateParam) {
       try {
-        // 尝试解析日期参数
+        // Try to parse date parameter
         const date = new Date(dateParam);
         if (!isNaN(date.getTime())) {
-          // 如果是有效日期，设置为选中日期
+          // If it's a valid date, set it as selected date
           setSelectedDate(date);
         }
       } catch (error) {
-        console.error('解析日期参数时出错:', error);
+        console.error('Error parsing date parameter:', error);
       }
     }
   }, []);
 
-  // 加载保存的数据
+  // Load saved data
   const loadSavedData = () => {
-    // 加载日程表数据
+    // Load schedule data
     try {
       const savedData = localStorage.getItem('dailySchedule');
       if (savedData) {
         console.log('Found saved schedule data in localStorage');
         const parsedData = JSON.parse(savedData);
         
-        // 保存当前任务数据
+        // Save current task data
         const currentTaskData = {};
         parsedData.forEach((hourSlots) => {
           hourSlots.forEach((slot) => {
             if (slot.task) {
-              // 使用时间作为键来保存任务
+              // Use time as key to save task
               currentTaskData[slot.time] = slot.task;
             }
           });
         });
         
-        // 重新初始化时间槽（确保使用最新设置）
+        // Reinitialize time slots (ensure using latest settings)
         const freshTimeSlots = initializeTimeSlots();
         
-        // 将保存的任务数据映射回新的时间槽
+        // Map saved task data to new time slots
         const updatedTimeSlots = freshTimeSlots.map((hourSlots) => {
           return hourSlots.map((slot) => {
-            // 检查是否有匹配的时间槽任务
+            // Check if there's a matching time slot task
             if (currentTaskData[slot.time]) {
               return { ...slot, task: currentTaskData[slot.time] };
             }
@@ -145,22 +211,22 @@ function DailySchedule() {
           });
         });
         
-        // 更新状态
+        // Update state
         setTimeSlots(updatedTimeSlots);
       } else {
-        // 如果没有保存的数据，则使用默认初始化
+        // If no saved data, use default initialization
         console.log('No saved schedule data found, initializing with default data');
         const freshTimeSlots = initializeTimeSlots();
         setTimeSlots(freshTimeSlots);
       }
     } catch (error) {
       console.error('Error loading saved schedule data:', error);
-      // 如果出错，则使用默认初始化
+      // If error, use default initialization
       const freshTimeSlots = initializeTimeSlots();
       setTimeSlots(freshTimeSlots);
     }
     
-    // 加载每日任务数据
+    // Load daily task data
     try {
       const savedDailyTask = localStorage.getItem('dailyTask');
       if (savedDailyTask) {
@@ -171,7 +237,7 @@ function DailySchedule() {
       console.error('Error loading saved daily task:', error);
     }
     
-    // 加载已复制任务数据
+    // Load copied task data
     try {
       const savedCopiedTasks = localStorage.getItem('copiedTasks');
       if (savedCopiedTasks) {
@@ -183,39 +249,39 @@ function DailySchedule() {
     }
   };
 
-  // 监听 localStorage 变化
+  // Listen for localStorage changes
   useEffect(() => {
-    // 定义事件处理函数
+    // Define event handler function
     const handleStorageChange = (event) => {
       if (event.key === 'appSettings') {
         console.log('Settings changed, reinitializing time slots...');
         
-        // 更新 CSS 变量
+        // Update CSS variables
         const { segmentsPerHour } = getUserSettings();
         document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
         
-        // 保存当前任务数据
+        // Save current task data
         const currentTaskData = {};
         
-        // 只有当 timeSlots 有数据时才处理
+        // Only process if timeSlots has data
         if (timeSlots && timeSlots.length > 0) {
           timeSlots.forEach((hourSlots) => {
             hourSlots.forEach((slot) => {
               if (slot.task) {
-                // 使用时间作为键来保存任务
+                // Use time as key to save task
                 currentTaskData[slot.time] = slot.task;
               }
             });
           });
         }
         
-        // 重新初始化时间槽
+        // Reinitialize time slots
         const freshTimeSlots = initializeTimeSlots();
         
-        // 将保存的任务数据映射回新的时间槽
+        // Map saved task data to new time slots
         const updatedTimeSlots = freshTimeSlots.map((hourSlots) => {
           return hourSlots.map((slot) => {
-            // 检查是否有匹配的时间槽任务
+            // Check if there's a matching time slot task
             if (currentTaskData[slot.time]) {
               return { ...slot, task: currentTaskData[slot.time] };
             }
@@ -223,10 +289,10 @@ function DailySchedule() {
           });
         });
         
-        // 更新状态
+        // Update state
         setTimeSlots(updatedTimeSlots);
         
-        // 保存到 localStorage
+        // Save to localStorage
         try {
           localStorage.setItem('dailySchedule', JSON.stringify(updatedTimeSlots));
           console.log('Updated time slots saved to localStorage');
@@ -236,17 +302,17 @@ function DailySchedule() {
       }
     };
     
-    // 添加事件监听器
+    // Add event listener
     window.addEventListener('storage', handleStorageChange);
     
-    // 清理函数
+    // Cleanup function
     return () => {
       window.removeEventListener('storage', handleStorageChange);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeSlots]);
 
-  // 更新当前时间的函数
+  // Update current time function
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentTime(new Date());
@@ -257,7 +323,7 @@ function DailySchedule() {
     };
   }, []);
 
-  // 格式化当前时间的函数
+  // Format current time function
   const formatCurrentTime = () => {
     const year = currentTime.getFullYear();
     const month = String(currentTime.getMonth() + 1).padStart(2, '0');
@@ -267,30 +333,30 @@ function DailySchedule() {
     return `${year}-${month}-${day}, ${weekday}`;
   };
 
-  // 统计任务数量的函数
+  // Task stats function
   const getTaskStats = () => {
-    // 使用Map来存储每个唯一任务的状态
+    // Use Map to store status of each unique task
     const taskStatusMap = new Map();
 
-    // 统计时间段任务
+    // Count time slot tasks
     timeSlots.forEach(hourSlots => {
       hourSlots.forEach(slot => {
         if (slot.task) {
-          // 解析任务字符串，提取任务和状态
+          // Parse task string, extract task and status
           const taskItems = slot.task.split('\n').filter(item => item.trim() !== '');
           
           taskItems.forEach(item => {
-            // 提取任务内容和状态
+            // Extract task content and status
             const statusMatch = item.match(/\[STATUS:(.*?)\]/);
             if (statusMatch) {
               const status = statusMatch[1];
-              // 提取任务内容（不包含状态信息）
+              // Extract task content (without status information)
               const taskContent = item.replace(/\[STATUS:.*?\]/, '').trim();
               
-              // 如果任务已经存在于Map中，只有当新状态优先级更高时才更新
+              // If task already exists in Map, only update if new status has higher priority
               if (taskStatusMap.has(taskContent)) {
                 const currentStatus = taskStatusMap.get(taskContent);
-                // 状态优先级: completed > failed > initial
+                // Status priority: completed > failed > initial
                 if (
                   (status === 'completed') || 
                   (status === 'failed' && currentStatus === 'initial')
@@ -298,11 +364,11 @@ function DailySchedule() {
                   taskStatusMap.set(taskContent, status);
                 }
               } else {
-                // 如果任务不存在于Map中，添加它
+                // If task doesn't exist in Map, add it
                 taskStatusMap.set(taskContent, status);
               }
             } else {
-              // 如果没有状态信息，将其视为初始状态
+              // If no status information, treat as initial status
               const taskContent = item.trim();
               if (!taskStatusMap.has(taskContent)) {
                 taskStatusMap.set(taskContent, 'initial');
@@ -313,7 +379,7 @@ function DailySchedule() {
       });
     });
 
-    // 计算各种状态的任务数量
+    // Calculate task counts for each status
     let completedTasks = 0;
     let failedTasks = 0;
     let initialTasks = 0;
@@ -329,16 +395,16 @@ function DailySchedule() {
     });
 
     return {
-      total: taskStatusMap.size, // 使用Map的大小作为总任务数
+      total: taskStatusMap.size, // Use Map size as total task count
       completed: completedTasks,
       failed: failedTasks,
       initial: initialTasks
     };
   };
 
-  // 每当 timeSlots 变化时，保存到 localStorage
+  // Whenever timeSlots change, save to localStorage
   useEffect(() => {
-    // 只有当 timeSlots 有数据时才保存
+    // Only save if timeSlots has data
     if (timeSlots && timeSlots.length > 0) {
       try {
         console.log('Saving timeSlots to localStorage');
@@ -349,7 +415,7 @@ function DailySchedule() {
     }
   }, [timeSlots]);
 
-  // 每当 dailyTask 变化时，保存到 localStorage
+  // Whenever dailyTask changes, save to localStorage
   useEffect(() => {
     try {
       console.log('Saving dailyTask to localStorage');
@@ -359,7 +425,7 @@ function DailySchedule() {
     }
   }, [dailyTask]);
 
-  // 每当 copiedTasks 变化时，保存到 localStorage
+  // Whenever copiedTasks change, save to localStorage
   useEffect(() => {
     try {
       console.log('Saving copiedTasks to localStorage');
@@ -369,7 +435,7 @@ function DailySchedule() {
     }
   }, [copiedTasks]);
 
-  // 添加页面卸载前的保存逻辑
+  // Add save logic before page unload
   useEffect(() => {
     const handleBeforeUnload = () => {
       try {
@@ -388,33 +454,33 @@ function DailySchedule() {
     };
   }, [timeSlots, dailyTask]);
 
-  // 找到当前时间对应的时间段
+  // Find current time slot
   const findCurrentTimeSlot = () => {
     const now = new Date();
     const currentHour = now.getHours();
     const currentMinute = now.getMinutes();
     
-    // 获取用户设置的时间范围
+    // Get user settings time range
     const { startHour, endHour, segmentsPerHour } = getUserSettings();
     
-    // 检查当前时间是否在用户设置的时间范围内
+    // Check if current time is within user settings time range
     if (currentHour < startHour || currentHour >= endHour) {
       return null;
     }
     
-    // 计算小时索引（相对于起始时间）
+    // Calculate hour index (relative to start time)
     const hourIndex = currentHour - startHour;
     
-    // 计算每个分段的分钟数
+    // Calculate minutes per segment
     const minutesPerSegment = 60 / segmentsPerHour;
     
-    // 确定当前分钟对应的时间段
+    // Determine current minute's time slot
     const segmentIndex = Math.floor(currentMinute / minutesPerSegment);
     
     return { hourIndex, segmentIndex };
   };
 
-  // 检查当前时间段是否已经包含特定任务
+  // Check if current time slot already contains specific task
   const isTaskInCurrentTimeSlot = (taskContent) => {
     const currentSlot = findCurrentTimeSlot();
     if (!currentSlot) {
@@ -428,12 +494,12 @@ function DailySchedule() {
       return false;
     }
     
-    // 解析当前时间段的任务
+    // Parse current time slot tasks
     const currentTaskItems = currentSlotTasks.split('\n').filter(item => item.trim() !== '');
     
-    // 检查是否有任务内容匹配
+    // Check if task content matches
     for (const item of currentTaskItems) {
-      // 提取任务内容（不包含状态信息）
+      // Extract task content (without status information)
       const content = item.split(' [STATUS:')[0];
       if (content === taskContent) {
         return true;
@@ -443,7 +509,7 @@ function DailySchedule() {
     return false;
   };
 
-  // 复制任务到当前时间段
+  // Copy task to current time slot
   const copyTaskToCurrent = (taskContent) => {
     const currentSlot = findCurrentTimeSlot();
     if (!currentSlot) {
@@ -451,7 +517,7 @@ function DailySchedule() {
       return;
     }
     
-    // 检查任务是否已经存在于当前时间段
+    // Check if task already exists in current time slot
     if (isTaskInCurrentTimeSlot(taskContent)) {
       console.log(`Task "${taskContent}" is already in the current time slot`);
       return;
@@ -459,22 +525,22 @@ function DailySchedule() {
     
     const { hourIndex, segmentIndex } = currentSlot;
     
-    // 获取当前时间段的任务
+    // Get current time slot tasks
     const currentSlotTasks = timeSlots[hourIndex][segmentIndex].task;
     
-    // 如果当前时间段已经有任务，则将新任务添加到现有任务后面
+    // If current time slot already has tasks, add new task to existing tasks
     const updatedTask = currentSlotTasks 
       ? `${currentSlotTasks}\n${taskContent}`
       : taskContent;
     
-    // 更新当前时间段的任务
+    // Update current time slot tasks
     updateTask(hourIndex, segmentIndex, updatedTask);
     
-    // 将任务添加到已复制列表 - 保留这部分代码以便跟踪历史记录，但不再用于限制复制
+    // Add task to copied list - keep this code for tracking history, but no longer used for limiting copying
     const newCopiedTasks = [...copiedTasks, taskContent];
     setCopiedTasks(newCopiedTasks);
     
-    // 保存到 localStorage
+    // Save to localStorage
     try {
       localStorage.setItem('copiedTasks', JSON.stringify(newCopiedTasks));
     } catch (error) {
@@ -492,7 +558,7 @@ function DailySchedule() {
     newTimeSlots[hourIndex][segmentIndex].task = task;
     setTimeSlots(newTimeSlots);
     
-    // 立即保存到 localStorage
+    // Save immediately to localStorage
     try {
       localStorage.setItem('dailySchedule', JSON.stringify(newTimeSlots));
       console.log('Task saved to localStorage');
@@ -506,7 +572,7 @@ function DailySchedule() {
     console.log('Updating daily task:', task);
     setDailyTask(task);
     
-    // 立即保存到 localStorage
+    // Save immediately to localStorage
     try {
       localStorage.setItem('dailyTask', task);
       console.log('Daily task saved to localStorage');
@@ -522,21 +588,21 @@ function DailySchedule() {
     if (confirmReset) {
       console.log('Resetting all time slots and daily task...');
       
-      // 创建全新的时间段数据，使用当前设置
+      // Create new time slot data, using current settings
       const freshTimeSlots = initializeTimeSlots();
       
-      // 更新状态
+      // Update state
       setTimeSlots(freshTimeSlots);
       setDailyTask('');
       setCopiedTasks([]);
       
-      // 清除 localStorage 中的数据
+      // Clear localStorage data
       try {
         localStorage.removeItem('dailySchedule');
         localStorage.removeItem('dailyTask');
         localStorage.removeItem('copiedTasks');
         
-        // 清除所有相关的本地存储数据
+        // Clear all related local storage data
         const keys = Object.keys(localStorage);
         keys.forEach(key => {
           if (key.startsWith('task_') || key.startsWith('status_')) {
@@ -544,17 +610,17 @@ function DailySchedule() {
           }
         });
         
-        // 重新保存空数据
+        // Re-save empty data
         localStorage.setItem('dailySchedule', JSON.stringify(freshTimeSlots));
         localStorage.setItem('dailyTask', '');
         localStorage.setItem('copiedTasks', JSON.stringify([]));
         
         console.log('All tasks and schedule data have been reset');
         
-        // 显示重置成功消息
+        // Show reset success message
         setResetMessage('Schedule has been reset successfully!');
         
-        // 3秒后清除消息
+        // Clear message after 3 seconds
         setTimeout(() => {
           setResetMessage('');
         }, 3000);
@@ -564,27 +630,34 @@ function DailySchedule() {
     }
   };
 
-  // 保存当天数据到历史记录
-  const saveCurrentDayToHistory = () => {
-    // 获取当前日期
+  // Save current day data to history
+  const saveCurrentDayToHistory = (specificDate = null) => {
+    // Get current date or specified date
     const now = new Date();
-    const today = now.toISOString().split('T')[0]; // 格式: YYYY-MM-DD
+    const today = now.toISOString().split('T')[0]; // Today's date
     
-    // 检查当前显示的日期是否是今天
-    const currentDate = selectedDate || now;
-    const currentDateStr = currentDate.toISOString().split('T')[0];
+    // If specific date provided, use it; otherwise use today's date
+    const dateToSave = specificDate || today;
     
-    // 如果不是今天的数据，不保存到历史记录
-    if (currentDateStr !== today) {
-      console.log(`不保存非当天数据到历史记录: ${currentDateStr}`);
-      return;
+    // If no specific date provided (i.e., normal save current day data), check if current displayed date is today
+    if (!specificDate) {
+      const currentDate = selectedDate || now;
+      const currentDateStr = currentDate.toISOString().split('T')[0];
+      
+      // If not today's data, don't save to history
+      if (currentDateStr !== today) {
+        console.log(`Not saving non-current day data to history: ${currentDateStr}`);
+        setSaveMessage('Can only save task records for today!');
+        setTimeout(() => setSaveMessage(''), 3000);
+        return;
+      }
     }
     
-    // 获取当前任务统计
+    // Get current task stats
     const stats = getTaskStats();
     
-    // 创建今天的数据对象
-    const todayData = {
+    // Create data object
+    const dataToSave = {
       timeSlots: [...timeSlots],
       dailyTasks: dailyTask,
       stats: stats,
@@ -592,39 +665,156 @@ function DailySchedule() {
     };
     
     try {
-      // 获取现有历史数据
+      // Get existing history data
       let historyData = {};
       const savedHistory = localStorage.getItem(TASK_HISTORY_KEY);
       if (savedHistory) {
         historyData = JSON.parse(savedHistory);
       }
       
-      // 添加或更新今天的数据
-      historyData[today] = todayData;
+      // Add or update data
+      historyData[dateToSave] = dataToSave;
       
-      // 保存回 localStorage
+      // Save back to localStorage
       localStorage.setItem(TASK_HISTORY_KEY, JSON.stringify(historyData));
       
-      console.log(`已保存 ${today} 的数据到历史记录`);
+      // Update last save date
+      localStorage.setItem('lastSaveDate', today);
+      
+      console.log(`Saved ${dateToSave} data to history`);
+      
+      // Show save success message (only when manually saving)
+      if (!specificDate) {
+        setSaveMessage('Task record saved to history successfully!');
+        setTimeout(() => setSaveMessage(''), 3000);
+      }
     } catch (error) {
-      console.error('保存历史数据时出错:', error);
+      console.error('Error saving history data:', error);
+      
+      // Show save failure message (only when manually saving)
+      if (!specificDate) {
+        setSaveMessage('Save failed, please try again!');
+        setTimeout(() => setSaveMessage(''), 3000);
+      }
     }
   };
 
-  // 每当 timeSlots 或 dailyTask 变化时，保存到历史记录
+  // Check if need to save previous day's data
   useEffect(() => {
-    // 只有当数据加载完成后才保存
-    if (timeSlots.length > 0) {
-      saveCurrentDayToHistory();
+    // Only execute if timeSlots has been loaded
+    if (timeSlots.length === 0) return;
+
+    // Get current date
+    const now = new Date();
+    const today = now.toISOString().split('T')[0];
+    
+    // Get last save date
+    const lastSaveDate = localStorage.getItem('lastSaveDate');
+    
+    if (!lastSaveDate || lastSaveDate !== today) {
+      // Calculate previous day's date
+      const yesterday = new Date(now);
+      yesterday.setDate(yesterday.getDate() - 1);
+      const yesterdayStr = yesterday.toISOString().split('T')[0];
+      
+      // Check if there's previous day's data to save
+      const savedData = localStorage.getItem('dailySchedule');
+      const savedDailyTask = localStorage.getItem('dailyTask');
+      
+      if (savedData && savedDailyTask) {
+        console.log(`Detected previous day (${yesterdayStr}) data not saved, saving...`);
+        
+        // Temporary save current state
+        const currentTimeSlots = [...timeSlots];
+        const currentDailyTask = dailyTask;
+        
+        try {
+          // Load previous day's data
+          const parsedData = JSON.parse(savedData);
+          setTimeSlots(parsedData);
+          setDailyTask(savedDailyTask);
+          
+          // Save previous day's data to history
+          setTimeout(() => {
+            saveCurrentDayToHistory(yesterdayStr);
+            
+            // Restore current state
+            setTimeSlots(currentTimeSlots);
+            setDailyTask(currentDailyTask);
+            
+            // Update last save date to today
+            localStorage.setItem('lastSaveDate', today);
+            
+            console.log(`Successfully saved previous day (${yesterdayStr}) data to history`);
+          }, 500);
+        } catch (error) {
+          console.error('Error saving previous day data:', error);
+        }
+      } else {
+        // If no previous day's data, directly update last save date to today
+        localStorage.setItem('lastSaveDate', today);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [timeSlots, dailyTask]);
+  }, [timeSlots.length]); // Only depend on timeSlots.length, avoid circular dependency
+
+  // Add a timer, save daily task records at 23:59 every day
+  useEffect(() => {
+    // Calculate milliseconds until today 23:59:00
+    const calculateTimeUntilEndOfDay = () => {
+      const now = new Date();
+      const endOfDay = new Date(
+        now.getFullYear(),
+        now.getMonth(),
+        now.getDate(),
+        23,
+        59,
+        0
+      );
+      return endOfDay.getTime() - now.getTime();
+    };
+
+    // Set timer
+    const scheduleEndOfDaySave = () => {
+      const timeUntilEndOfDay = calculateTimeUntilEndOfDay();
+      console.log(`${Math.floor(timeUntilEndOfDay / 1000 / 60)} minutes until today ends, will save task records at end of day`);
+      
+      // Set timer to save data at end of day
+      const timer = setTimeout(() => {
+        console.log('Executing daily task record save');
+        
+        // Get current date
+        const now = new Date();
+        const today = now.toISOString().split('T')[0];
+        
+        // Save current day data
+        saveCurrentDayToHistory(today);
+        
+        // Update last save date
+        localStorage.setItem('lastSaveDate', today);
+        
+        // Re-set tomorrow's timer
+        setTimeout(scheduleEndOfDaySave, 1000); // 1 second later recalculate tomorrow's time
+      }, timeUntilEndOfDay);
+      
+      return timer;
+    };
+    
+    // Initialize timer
+    const timer = scheduleEndOfDaySave();
+    
+    // Cleanup function
+    return () => {
+      clearTimeout(timer);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Empty dependency array, runs only once when component mounts
 
   // Render time slots
   const renderTimeSlots = () => {
     const mainContent = [];
     
-    // 获取用户设置的时间范围
+    // Get user settings time range
     const { startHour, segmentsPerHour } = getUserSettings();
     
     // Add header row
@@ -652,7 +842,7 @@ function DailySchedule() {
     timeSlots.forEach((hourSlots, hourIndex) => {
       const actualHour = startHour + hourIndex;
       
-      // 在每个小时行前方添加时间线
+      // Add time line row above each hour
       timeSlotRows.push(
         <div className="time-line-row" key={`timeline-${hourIndex}`}>
           <div className="hour-label"></div>
@@ -660,7 +850,7 @@ function DailySchedule() {
         </div>
       );
       
-      // 添加时间段行
+      // Add time slot row
       timeSlotRows.push(
         <div className="schedule-row" key={hourIndex}>
           <div className="hour-label">{actualHour}:00</div>
@@ -703,11 +893,14 @@ function DailySchedule() {
     <div className="daily-schedule">
       <h1>Efficiency Tracker</h1>
       
-      <button className="reset-button" onClick={resetSchedule}>
-        Reset Schedule
-      </button>
+      <div className="action-buttons">
+        <button className="reset-button" onClick={resetSchedule}>
+          Reset Schedule
+        </button>
+      </div>
       
       {resetMessage && <div className="reset-message">{resetMessage}</div>}
+      {saveMessage && <div className="save-message">{saveMessage}</div>}
       
       <div className="schedule-container">
         <div className="info-container">

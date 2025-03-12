@@ -1,32 +1,87 @@
+/* 全局设置所有日历元素的鼠标样式为默认箭头 - 移到文件顶部以确保优先级 */
+.react-calendar,
+.react-calendar *,
+.react-calendar button,
+.react-calendar button:hover,
+.react-calendar button:focus,
+.react-calendar__tile,
+.react-calendar__tile:hover,
+.react-calendar__tile:focus,
+.react-calendar__tile:enabled,
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus,
+.react-calendar__tile:disabled,
+.react-calendar__tile:disabled:hover,
+.react-calendar__navigation button,
+.react-calendar__navigation button:hover,
+.react-calendar__navigation button:focus,
+.react-calendar__navigation button:enabled,
+.react-calendar__navigation button:disabled {
+  cursor: default !important; /* 强制所有元素使用默认鼠标样式 */
+}
+
 .custom-calendar-container {
-  margin: 20px 0;
-  padding: 10px;
-  background-color: #fff;
+  margin-bottom: 20px;
   border-radius: 8px;
+  overflow: hidden;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-/* 覆盖 react-calendar 默认样式 */
+/* 自定义react-calendar样式 */
 .react-calendar {
   width: 100%;
+  max-width: 100%;
+  background: white;
   border: none;
-  font-family: inherit;
+  font-family: Arial, Helvetica, sans-serif;
+  line-height: 1.125em;
 }
 
 .react-calendar__navigation {
-  margin-bottom: 10px;
+  background-color: #2196F3;
+  color: white;
+  height: 44px;
+  margin-bottom: 0;
 }
 
 .react-calendar__navigation button {
+  color: white;
   min-width: 44px;
   background: none;
   font-size: 16px;
-  color: #333;
+  margin-top: 0;
+}
+
+/* 月份标签文本加粗 */
+.react-calendar__navigation__label__labelText,
+.react-calendar__navigation__label__labelText--from,
+.react-calendar__navigation__label__labelText--to {
+  font-weight: bold;
+}
+
+/* 修改禁用的导航按钮样式 - 使用更具体的选择器 */
+.custom-calendar-container .react-calendar__navigation button:disabled,
+.custom-calendar-container .react-calendar__navigation__label:disabled,
+.custom-calendar-container .react-calendar__navigation__next-button:disabled,
+.react-calendar__navigation button[disabled],
+.react-calendar__navigation .react-calendar__navigation__label[disabled],
+.react-calendar__navigation .react-calendar__navigation__next-button[disabled] {
+  background-color: #2196F3 !important; /* 使用!important确保不被覆盖 */
+  color: white !important; /* 与启用按钮相同的文字颜色 */
+  opacity: 1 !important; /* 不降低透明度 */
+  cursor: default !important; /* 默认鼠标样式，不显示禁止符号 */
+}
+
+/* 特别针对月份标签和下一个月按钮 */
+.react-calendar__navigation__label:disabled,
+.react-calendar__navigation__next-button:disabled {
+  background-color: #2196F3 !important;
+  color: white !important;
 }
 
 .react-calendar__navigation button:enabled:hover,
 .react-calendar__navigation button:enabled:focus {
-  background-color: #f0f7ff;
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 .react-calendar__month-view__weekdays {
@@ -34,60 +89,165 @@
   text-transform: uppercase;
   font-weight: bold;
   font-size: 0.8em;
+  background-color: #e3f2fd;
+  color: #0d47a1;
 }
 
 .react-calendar__month-view__weekdays__weekday {
-  padding: 10px 0;
+  padding: 0.5em;
+  color: #0d47a1;
 }
 
 .react-calendar__month-view__days__day {
-  padding: 10px 0;
+  padding: 8px 0;
 }
 
 .react-calendar__tile {
-  position: relative;
-  padding: 10px 0;
-  background: none;
+  max-width: 100%;
   text-align: center;
-  line-height: 16px;
+  padding: 0.75em 0.5em;
+  background: none;
+  position: relative;
+  cursor: default; /* 设置默认鼠标样式 */
 }
 
 .react-calendar__tile:enabled:hover,
 .react-calendar__tile:enabled:focus {
-  background-color: #f0f7ff;
+  background-color: transparent; /* 默认不变色 */
+  border-radius: 6px;
+  cursor: default; /* 保持默认鼠标样式 */
+}
+
+/* 有数据的日期hover效果 */
+.react-calendar__tile.has-data:enabled:hover,
+.react-calendar__tile.has-data:enabled:focus,
+button.react-calendar__tile.has-data:hover,
+button.react-calendar__tile.has-data:focus {
+  background-color: #e6f7ff !important; /* 有数据的日期hover时变色 */
+  border-radius: 6px;
+  cursor: default; /* 保持默认鼠标样式 */
 }
 
 .react-calendar__tile--now {
-  background-color: #ffffe0;
+  background: #ffeb3b;
+  border-radius: 6px;
+}
+
+.react-calendar__tile--now:enabled:hover,
+.react-calendar__tile--now:enabled:focus {
+  background: #ffe600;
 }
 
 .react-calendar__tile--active {
-  background-color: #2196F3;
-  color: white;
+  background: transparent !important; /* 透明背景 */
+  color: inherit !important; /* 使用继承的颜色，而不是固定的蓝色 */
+  border-radius: 6px;
+  cursor: default; /* 保持默认鼠标样式 */
 }
 
+/* 移除普通选中日期的悬停效果 */
 .react-calendar__tile--active:enabled:hover,
 .react-calendar__tile--active:enabled:focus {
-  background-color: #0b7dda;
+  background: transparent !important; /* 保持透明背景，不显示悬停效果 */
+  cursor: default; /* 保持默认鼠标样式 */
 }
 
-/* 自定义标记样式 */
+/* 有数据的日期样式 */
 .has-data {
   font-weight: bold;
+  color: #2196F3;
 }
 
+/* 确保有数据的日期即使被选中也不会有背景色 */
+.react-calendar__tile.has-data,
+.react-calendar__tile--active.has-data,
+.react-calendar__month-view__days__day.has-data,
+.react-calendar__month-view__days__day.react-calendar__tile--active.has-data,
+button.react-calendar__tile.has-data,
+button.react-calendar__tile--active.has-data {
+  background: transparent !important;
+  background-color: transparent !important;
+}
+
+/* 保持文字颜色 */
+.react-calendar__tile--active.has-data,
+.react-calendar__month-view__days__day.react-calendar__tile--active.has-data,
+button.react-calendar__tile--active.has-data {
+  color: #2196F3 !important;
+}
+
+/* 选中的有数据日期hover效果 */
+.react-calendar__tile--active.has-data:hover,
+.react-calendar__tile--active.has-data:focus,
+button.react-calendar__tile--active.has-data:hover,
+button.react-calendar__tile--active.has-data:focus {
+  background-color: #e6f7ff !important;
+  border-radius: 6px;
+  cursor: default; /* 保持默认鼠标样式 */
+}
+
+/* 日期标记样式 */
 .date-marker {
   position: absolute;
   bottom: 2px;
   left: 0;
   width: 100%;
-  height: 3px;
-  background-color: #eee;
+  height: 4px;
+  background-color: #f0f0f0;
+  overflow: hidden;
 }
 
 .completion-indicator {
   height: 100%;
   transition: width 0.3s ease;
+}
+
+.completion-indicator.completed {
+  background-color: #4CAF50;
+}
+
+.completion-indicator.initial {
+  background-color: #FFC107;
+}
+
+.completion-indicator.failed {
+  background-color: #F44336;
+}
+
+/* 禁用的日期样式 */
+.disabled-date,
+.react-calendar__tile:disabled {
+  opacity: 0.4;
+  background-color: #f0f0f0;
+  color: #999;
+  cursor: default !important; /* 改为默认鼠标样式，不显示禁止符号 */
+  text-decoration: line-through;
+  position: relative;
+}
+
+.disabled-date:hover,
+.react-calendar__tile:disabled:hover {
+  background-color: #f0f0f0 !important;
+  cursor: default !important; /* 改为默认鼠标样式，不显示禁止符号 */
+}
+
+/* 为禁用日期添加斜线 */
+.disabled-date::after,
+.react-calendar__tile:disabled::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: linear-gradient(to bottom right, transparent calc(50% - 1px), #ccc, transparent calc(50% + 1px));
+  pointer-events: none;
+}
+
+/* 确保禁用日期的标记不显示 */
+.disabled-date .date-marker,
+.react-calendar__tile:disabled .date-marker {
+  display: none;
 }
 
 /* 响应式调整 */

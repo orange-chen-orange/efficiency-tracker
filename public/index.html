@@ -7,7 +7,7 @@
     <meta name="theme-color" content="#000000" />
     <meta
       name="description"
-      content="Web site created using create-react-app"
+      content="Efficiency Tracker - 管理您的日常任务和时间"
     />
     <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
     <!--
@@ -24,7 +24,59 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>React App</title>
+    <title>Efficiency Tracker</title>
+    <script>
+      // 清除缓存
+      if (window.location.search.includes('clear-cache')) {
+        // 清除Service Worker缓存
+        if ('caches' in window) {
+          caches.keys().then(function(cacheNames) {
+            return Promise.all(
+              cacheNames.map(function(cacheName) {
+                console.log('删除缓存:', cacheName);
+                return caches.delete(cacheName);
+              })
+            );
+          }).then(function() {
+            console.log('所有缓存已清除');
+          });
+        }
+        
+        // 清除Service Worker注册
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(function(registrations) {
+            for (let registration of registrations) {
+              registration.unregister();
+              console.log('Service Worker已注销');
+            }
+          });
+        }
+        
+        // 清除localStorage
+        localStorage.clear();
+        console.log('localStorage已清除');
+        
+        // 清除sessionStorage
+        sessionStorage.clear();
+        console.log('sessionStorage已清除');
+        
+        // 重定向到没有参数的URL
+        window.location.href = window.location.pathname;
+      }
+      
+      // 注册Service Worker
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('/service-worker.js')
+            .then(function(registration) {
+              console.log('Service Worker 注册成功，范围: ', registration.scope);
+            })
+            .catch(function(error) {
+              console.log('Service Worker 注册失败: ', error);
+            });
+        });
+      }
+    </script>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>

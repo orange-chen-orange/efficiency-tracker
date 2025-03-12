@@ -9,7 +9,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   height: auto; /* Adaptive height */
-  min-height: 35px; /* 设置最小高度为35px */
+  min-height: 69.55px; /* 设置最小高度为69.55px */
   box-sizing: border-box;
 }
 
@@ -114,7 +114,7 @@
 /* Task content */
 .daily-task-slot .task-content {
   flex: 1;
-  cursor: pointer;
+  cursor: default;
   padding: 0;
   margin: 0;
   word-break: break-word;
@@ -133,7 +133,7 @@
 .daily-task-slot .status-btn {
   background: none;
   border: 1px solid #ddd;
-  cursor: pointer;
+  cursor: default;
   font-size: 9px;
   padding: 0;
   margin: 0;
@@ -178,7 +178,7 @@
   margin: 0;
   padding: 0;
   font-size: 18px;
-  cursor: pointer;
+  cursor: default;
   color: #f44336;
   opacity: 0.5;
   transition: all 0.2s ease;
@@ -192,8 +192,8 @@
 /* Add button - initial state in the middle */
 .daily-task-slot .add-task-btn {
   position: absolute;
-  width: 20px;
-  height: 20px;
+  width: 28px; /* 从14px再增加一倍到28px */
+  height: 28px; /* 从14px再增加一倍到28px */
   border-radius: 50%;
   background-color: #2196f3;
   color: white;
@@ -201,8 +201,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: 14px;
+  cursor: default;
+  font-size: 20px; /* 从10px再增加一倍到20px */
   line-height: 1;
   padding: 0;
   margin: 0;
@@ -267,7 +267,7 @@
   color: white;
   border: none;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: default;
   font-size: 14px;
   white-space: nowrap; /* Prevent text from wrapping */
   min-width: 60px; /* Set minimum width */
@@ -317,9 +317,9 @@
   }
   
   .daily-task-slot .add-task-btn {
-    width: 18px;
-    height: 18px;
-    font-size: 12px;
+    width: 24px; /* 从12px再增加一倍到24px */
+    height: 24px; /* 从12px再增加一倍到24px */
+    font-size: 16px; /* 从8px再增加一倍到16px */
   }
   
   .daily-task-slot .tasks-list + .add-task-btn {

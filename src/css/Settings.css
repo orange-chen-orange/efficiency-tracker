@@ -11,6 +11,8 @@
 .settings-header {
   text-align: center;
   margin-bottom: 30px;
+  max-width: 800px;
+  margin: 0 auto 30px;
 }
 
 .settings-header h1 {
@@ -92,7 +94,7 @@
   font-size: 16px;
   font-weight: bold;
   border-radius: 4px;
-  cursor: pointer;
+  cursor: default;
   transition: all 0.3s ease;
   margin-top: 10px;
   align-self: center;
