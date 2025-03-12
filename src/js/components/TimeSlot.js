@@ -1,7 +1,7 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import '../../css/TimeSlot.css';
 
-function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [], isTaskInCurrentTimeSlot }) {
+function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [], isTaskInCurrentTimeSlot, isReadOnly = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTask, setCurrentTask] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -104,9 +104,18 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
     return result;
   }, [STATUS_INITIAL]);
 
-  // Handle task input change
+  // 添加自动调整高度的函数
+  const adjustTextareaHeight = (element) => {
+    if (element) {
+      element.style.height = 'auto';
+      element.style.height = (element.scrollHeight) + 'px';
+    }
+  };
+
+  // 处理文本输入变化
   const handleTaskChange = (e) => {
     setCurrentTask(e.target.value);
+    adjustTextareaHeight(e.target);
   };
 
   // Handle pressing Enter key
@@ -249,28 +258,35 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
             key={index} 
             className={`task-item status-${taskStatuses[index]}`}
           >
-            <div className="task-status-controls">
-              <button 
-                className={`status-btn ${taskStatuses[index] === STATUS_COMPLETED ? 'active' : ''}`}
-                onClick={() => handleTaskStatusChange(index, STATUS_COMPLETED)}
-                title="Completed"
-              >
-                ✅
-              </button>
-              <button 
-                className={`status-btn ${taskStatuses[index] === STATUS_FAILED ? 'active' : ''}`}
-                onClick={() => handleTaskStatusChange(index, STATUS_FAILED)}
-                title="Failed"
-              >
-                ❌
-              </button>
-            </div>
-            <div className="task-content" onClick={() => editTask(index)}>
+            {!isReadOnly && (
+              <div className="task-status-controls">
+                <button 
+                  className={`status-btn ${taskStatuses[index] === STATUS_COMPLETED ? 'active' : ''}`}
+                  onClick={() => handleTaskStatusChange(index, STATUS_COMPLETED)}
+                  title="Completed"
+                >
+                  ✅
+                </button>
+                <button 
+                  className={`status-btn ${taskStatuses[index] === STATUS_FAILED ? 'active' : ''}`}
+                  onClick={() => handleTaskStatusChange(index, STATUS_FAILED)}
+                  title="Failed"
+                >
+                  ❌
+                </button>
+              </div>
+            )}
+            <div 
+              className="task-content" 
+              onClick={isReadOnly ? undefined : () => editTask(index)}
+            >
               {taskItem}
             </div>
-            <button className="delete-task-btn" onClick={() => deleteTask(index)}>
-              ×
-            </button>
+            {!isReadOnly && (
+              <button className="delete-task-btn" onClick={() => deleteTask(index)}>
+                ×
+              </button>
+            )}
           </div>
         ))}
       </div>
@@ -278,25 +294,31 @@ function TimeSlot({ time, task, onTaskChange, copyTaskToCurrent, copiedTasks = [
   };
 
   return (
-    <div className={`time-slot status-${containerStatus}`}>
+    <div className={`time-slot status-${containerStatus} ${isReadOnly ? 'read-only' : ''}`}>
       {time !== "Daily Tasks" && <div className="time-display">{time}</div>}
       <div className="task-container">
-        {isEditing !== false ? (
+        {renderTasks()}
+        
+        {isEditing !== false && !isReadOnly ? (
           <div className="task-edit">
-            <input
-              type="text"
+            <textarea
               value={currentTask}
               onChange={handleTaskChange}
               onKeyDown={handleKeyDown}
               placeholder="Enter task..."
               autoFocus
+              rows="1"
+              ref={(textarea) => {
+                if (textarea) {
+                  adjustTextareaHeight(textarea);
+                }
+              }}
             />
             <button onClick={saveTask}>Save</button>
           </div>
         ) : (
           <>
-            {renderTasks()}
-            {showAddButton && (
+            {showAddButton && !isReadOnly && (
               <button 
                 className="add-task-btn" 
                 onClick={addNewTask}

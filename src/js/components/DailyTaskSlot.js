@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import '../../css/DailyTaskSlot.css';
 
-function DailyTaskSlot({ time, task, onTaskChange }) {
+function DailyTaskSlot({ time, task, onTaskChange, isReadOnly = false }) {
   const [isEditing, setIsEditing] = useState(false);
   const [currentTask, setCurrentTask] = useState('');
   const [tasks, setTasks] = useState([]);
@@ -99,9 +99,18 @@ function DailyTaskSlot({ time, task, onTaskChange }) {
     return result;
   }, [STATUS_INITIAL]);
 
-  // Handle task input change
+  // 添加自动调整高度的函数
+  const adjustTextareaHeight = (element) => {
+    if (element) {
+      element.style.height = 'auto';
+      element.style.height = (element.scrollHeight) + 'px';
+    }
+  };
+
+  // 处理文本输入变化
   const handleTaskChange = (e) => {
     setCurrentTask(e.target.value);
+    adjustTextareaHeight(e.target);
   };
 
   // Handle pressing Enter key
@@ -215,40 +224,44 @@ function DailyTaskSlot({ time, task, onTaskChange }) {
         key={index} 
         className={`task-item status-${taskStatuses[index]}`}
       >
-        <div className="task-status-controls">
-          <button 
-            className={`status-btn ${taskStatuses[index] === STATUS_COMPLETED ? 'active' : ''}`}
-            onClick={() => handleTaskStatusChange(index, STATUS_COMPLETED)}
-            title="Completed"
-          >
-            ✅
-          </button>
-          <button 
-            className={`status-btn ${taskStatuses[index] === STATUS_FAILED ? 'active' : ''}`}
-            onClick={() => handleTaskStatusChange(index, STATUS_FAILED)}
-            title="Failed"
-          >
-            ❌
-          </button>
-        </div>
+        {!isReadOnly && (
+          <div className="task-status-controls">
+            <button 
+              className={`status-btn ${taskStatuses[index] === STATUS_COMPLETED ? 'active' : ''}`}
+              onClick={() => handleTaskStatusChange(index, STATUS_COMPLETED)}
+              title="Completed"
+            >
+              ✅
+            </button>
+            <button 
+              className={`status-btn ${taskStatuses[index] === STATUS_FAILED ? 'active' : ''}`}
+              onClick={() => handleTaskStatusChange(index, STATUS_FAILED)}
+              title="Failed"
+            >
+              ❌
+            </button>
+          </div>
+        )}
         <div 
           className="task-content"
-          onClick={() => editTask(index)}
+          onClick={isReadOnly ? undefined : () => editTask(index)}
         >
           {task}
         </div>
-        <button 
-          className="delete-task-btn"
-          onClick={() => deleteTask(index)}
-        >
-          ×
-        </button>
+        {!isReadOnly && (
+          <button 
+            className="delete-task-btn"
+            onClick={() => deleteTask(index)}
+          >
+            ×
+          </button>
+        )}
       </div>
     ));
   };
 
   return (
-    <div className={`daily-task-slot status-${containerStatus}`}>
+    <div className={`daily-task-slot status-${containerStatus} ${isReadOnly ? 'read-only' : ''}`}>
       <div className="task-container">
         {/* 任务列表部分 */}
         {tasks.length > 0 && (
@@ -258,25 +271,33 @@ function DailyTaskSlot({ time, task, onTaskChange }) {
         )}
         
         {/* 编辑框部分 */}
-        {isEditing !== false ? (
+        {isEditing !== false && !isReadOnly ? (
           <div className="task-edit">
-            <input
-              type="text"
+            <textarea
               value={currentTask}
               onChange={handleTaskChange}
               onKeyDown={handleKeyDown}
+              placeholder="Enter task..."
               autoFocus
+              rows="1"
+              ref={(textarea) => {
+                if (textarea) {
+                  adjustTextareaHeight(textarea);
+                }
+              }}
             />
             <button onClick={saveTask}>Save</button>
           </div>
         ) : (
           /* 添加按钮部分 */
-          <button 
-            className="add-task-btn"
-            onClick={addNewTask}
-          >
-            +
-          </button>
+          !isReadOnly && (
+            <button 
+              className="add-task-btn"
+              onClick={addNewTask}
+            >
+              +
+            </button>
+          )
         )}
       </div>
     </div>

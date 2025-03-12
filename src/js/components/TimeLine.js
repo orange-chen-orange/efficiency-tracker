@@ -3,6 +3,7 @@ import '../../css/TimeLine.css';
 
 function TimeLine({ hour }) {
   const [currentMinute, setCurrentMinute] = useState(0);
+  const [currentTime, setCurrentTime] = useState('');
   
   // 更新当前时间
   useEffect(() => {
@@ -10,6 +11,11 @@ function TimeLine({ hour }) {
       const now = new Date();
       const currentHour = now.getHours();
       const minute = now.getMinutes();
+      
+      // 格式化当前时间为 HH:MM 格式
+      const formattedHour = currentHour.toString().padStart(2, '0');
+      const formattedMinute = minute.toString().padStart(2, '0');
+      setCurrentTime(`${formattedHour}:${formattedMinute}`);
       
       // 检查当前时间与目标小时的关系
       if (currentHour === hour) {
@@ -41,11 +47,24 @@ function TimeLine({ hour }) {
   
   return (
     <div className="time-line-container">
-      <div className="progress-container">
-        <div 
-          className="progress-bar"
-          style={{ width: `${calculateProgress()}%` }}
-        ></div>
+      <div className="time-line">
+        {/* 时间进度条 */}
+        <div className="progress-container">
+          <div 
+            className="progress-bar"
+            style={{ width: `${calculateProgress()}%` }}
+          ></div>
+          
+          {/* 时间标签 */}
+          {currentMinute > 0 && currentMinute < 60 && (
+            <div 
+              className="current-time-label"
+              style={{ left: `${calculateProgress()}%` }}
+            >
+              {currentTime}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );

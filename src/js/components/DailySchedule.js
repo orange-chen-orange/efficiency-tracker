@@ -1,10 +1,16 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import TimeSlot from './TimeSlot';
 import TimeLine from './TimeLine';
 import DailyTaskSlot from './DailyTaskSlot';
 import '../../css/DailySchedule.css';
 
 function DailySchedule() {
+  // 常量定义
+  const TIME_SLOTS_KEY = 'timeSlots';
+  const DAILY_TASKS_KEY = 'dailyTasks';
+  const TASK_HISTORY_KEY = 'taskHistory';
+  
   // 获取用户设置
   const getUserSettings = () => {
     let startHour = 7;
@@ -73,6 +79,7 @@ function DailySchedule() {
   const [dailyTask, setDailyTask] = useState('');
   const [copiedTasks, setCopiedTasks] = useState([]);
   const [currentTime, setCurrentTime] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(null);
   
   // 设置 CSS 变量和初始化数据
   useEffect(() => {
@@ -82,6 +89,26 @@ function DailySchedule() {
     // 加载保存的数据
     loadSavedData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // 在组件的初始化部分，添加获取URL参数的逻辑
+  useEffect(() => {
+    // 检查URL是否包含日期参数
+    const urlParams = new URLSearchParams(window.location.search);
+    const dateParam = urlParams.get('date');
+    
+    if (dateParam) {
+      try {
+        // 尝试解析日期参数
+        const date = new Date(dateParam);
+        if (!isNaN(date.getTime())) {
+          // 如果是有效日期，设置为选中日期
+          setSelectedDate(date);
+        }
+      } catch (error) {
+        console.error('解析日期参数时出错:', error);
+      }
+    }
   }, []);
 
   // 加载保存的数据
@@ -536,6 +563,62 @@ function DailySchedule() {
       }
     }
   };
+
+  // 保存当天数据到历史记录
+  const saveCurrentDayToHistory = () => {
+    // 获取当前日期
+    const now = new Date();
+    const today = now.toISOString().split('T')[0]; // 格式: YYYY-MM-DD
+    
+    // 检查当前显示的日期是否是今天
+    const currentDate = selectedDate || now;
+    const currentDateStr = currentDate.toISOString().split('T')[0];
+    
+    // 如果不是今天的数据，不保存到历史记录
+    if (currentDateStr !== today) {
+      console.log(`不保存非当天数据到历史记录: ${currentDateStr}`);
+      return;
+    }
+    
+    // 获取当前任务统计
+    const stats = getTaskStats();
+    
+    // 创建今天的数据对象
+    const todayData = {
+      timeSlots: [...timeSlots],
+      dailyTasks: dailyTask,
+      stats: stats,
+      timestamp: now.getTime()
+    };
+    
+    try {
+      // 获取现有历史数据
+      let historyData = {};
+      const savedHistory = localStorage.getItem(TASK_HISTORY_KEY);
+      if (savedHistory) {
+        historyData = JSON.parse(savedHistory);
+      }
+      
+      // 添加或更新今天的数据
+      historyData[today] = todayData;
+      
+      // 保存回 localStorage
+      localStorage.setItem(TASK_HISTORY_KEY, JSON.stringify(historyData));
+      
+      console.log(`已保存 ${today} 的数据到历史记录`);
+    } catch (error) {
+      console.error('保存历史数据时出错:', error);
+    }
+  };
+
+  // 每当 timeSlots 或 dailyTask 变化时，保存到历史记录
+  useEffect(() => {
+    // 只有当数据加载完成后才保存
+    if (timeSlots.length > 0) {
+      saveCurrentDayToHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [timeSlots, dailyTask]);
 
   // Render time slots
   const renderTimeSlots = () => {

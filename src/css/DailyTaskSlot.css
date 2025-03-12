@@ -9,7 +9,7 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   height: auto; /* Adaptive height */
-  min-height: auto; /* Adaptive height */
+  min-height: 35px; /* 设置最小高度为35px */
   box-sizing: border-box;
 }
 
@@ -40,12 +40,15 @@
   display: flex;
   flex-direction: column;
   position: relative;
-  min-height: 100px; /* Set minimum height */
+  min-height: 35px; /* 设置最小高度为35px */
   background-color: transparent;
   border-radius: 4px;
-  padding: 8px; /* Add some padding */
+  padding: 2px;
   margin: 0;
-  overflow-y: visible; /* Change to visible to avoid content being cut off */
+  overflow-y: visible;
+  justify-content: center; /* 确保内容垂直居中 */
+  align-items: center;
+  box-sizing: border-box;
 }
 
 /* Task list - no longer use flex: 1 to occupy space */
@@ -53,34 +56,36 @@
   display: flex;
   flex-direction: column;
   gap: 0;
-  margin: 0;
-  padding: 0 2px;
-  margin-bottom: 0;
-  width: 100%; /* Ensure width occupies space */
-  align-self: flex-start; /* Align top */
-  min-height: auto; /* Adaptive height */
-  height: auto; /* Adaptive height */
-}
-
-/* When there is a task list, adjust the button position in the container */
-.daily-task-slot .tasks-list + .add-task-btn {
-  margin-top: 5px; /* Add top margin */
-  align-self: center; /* Horizontal center */
+  margin: 2px;
+  padding: 2px;
+  margin-bottom: 2px;
+  width: calc(100% - 4px);
+  align-self: flex-start;
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 /* Task item */
 .daily-task-slot .task-item {
   display: flex;
   align-items: center;
-  padding: 2px;
-  margin: 2px;
+  padding: 4px;
+  margin: 4px;
+  margin-bottom: 4px;
   border-radius: 8px;
   background-color: #e3f2fd;
   transition: all 0.2s ease;
   border-left: 6px solid #2196f3;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  min-height: auto; /* Adaptive height */
-  height: auto; /* Adaptive height */
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.daily-task-slot .task-item:last-child {
+  margin-bottom: 4px;
 }
 
 .daily-task-slot .task-item.status-completed {
@@ -118,9 +123,10 @@
   justify-content: flex-start;
   display: flex;
   align-items: center;
-  min-height: auto; /* Adaptive height */
-  height: auto; /* Adaptive height */
-  line-height: 1.2; /* Control line height */
+  min-height: 0;
+  height: auto;
+  line-height: 1.2;
+  box-sizing: border-box;
 }
 
 /* Status button */
@@ -186,8 +192,8 @@
 /* Add button - initial state in the middle */
 .daily-task-slot .add-task-btn {
   position: absolute;
-  width: 30px;
-  height: 30px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background-color: #2196f3;
   color: white;
@@ -196,7 +202,7 @@
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  font-size: 20px;
+  font-size: 14px;
   line-height: 1;
   padding: 0;
   margin: 0;
@@ -218,7 +224,9 @@
   top: auto;
   left: auto;
   transform: none;
-  margin: 10px auto 5px;
+  margin: 1px auto 0;
+  align-self: center;
+  display: flex;
 }
 
 .daily-task-slot .add-task-btn.with-tasks:hover {
@@ -233,9 +241,10 @@
   margin: 2px 0; /* Reduce outer margin */
   width: 100%; /* Ensure width occupies space */
   box-sizing: border-box; /* Ensure padding does not increase width */
+  align-items: flex-start;
 }
 
-.daily-task-slot .task-edit input {
+.daily-task-slot .task-edit textarea {
   flex: 1;
   padding: 8px;
   border: 1px solid #ddd;
@@ -243,6 +252,12 @@
   font-size: 14px;
   min-width: 0; /* Allow input box to shrink */
   width: 100%; /* Try to occupy more space */
+  min-height: 32px;
+  resize: none;
+  overflow: hidden;
+  line-height: 1.5;
+  font-family: inherit;
+  box-sizing: border-box;
 }
 
 .daily-task-slot .task-edit button {
@@ -256,6 +271,8 @@
   font-size: 14px;
   white-space: nowrap; /* Prevent text from wrapping */
   min-width: 60px; /* Set minimum width */
+  min-height: 32px;
+  align-self: flex-start;
 }
 
 .daily-task-slot .task-edit button:hover {
@@ -266,16 +283,31 @@
 @media (max-width: 1200px) {
   .daily-task-slot {
     padding: 0;
-    min-height: 125px;
+    min-height: 35px; /* 在媒体查询中也设置为35px */
   }
   
   .daily-task-slot .task-container {
-    padding: 6px;
+    padding: 2px;
+    min-height: 35px; /* 在媒体查询中也设置为35px */
   }
   
   .daily-task-slot .task-item {
+    padding: 4px;
+    margin: 4px;
+    margin-bottom: 4px;
+    min-height: 0;
+  }
+  
+  .daily-task-slot .task-item:last-child {
+    margin-bottom: 4px;
+  }
+  
+  .daily-task-slot .tasks-list {
+    width: calc(100% - 4px);
+    min-height: 0;
     padding: 2px;
     margin: 2px;
+    margin-bottom: 2px;
   }
   
   .daily-task-slot .status-btn {
@@ -285,13 +317,13 @@
   }
   
   .daily-task-slot .add-task-btn {
-    width: 28px;
-    height: 28px;
-    font-size: 16px;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
   }
   
   .daily-task-slot .tasks-list + .add-task-btn {
-    margin: 2px auto 3px;
+    margin: 1px auto 0;
   }
   
   .daily-task-slot .task-content {

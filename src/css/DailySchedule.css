@@ -1,5 +1,5 @@
 .daily-schedule {
-  max-width: 1500px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 20px;
   font-family: 'Arial', sans-serif;
@@ -8,6 +8,27 @@
 h1 {
   text-align: center;
   color: #333;
+}
+
+.navigation-links {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
+
+.nav-link {
+  display: inline-block;
+  padding: 8px 16px;
+  margin: 0 10px;
+  background-color: #2196F3;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+  transition: background-color 0.2s;
+}
+
+.nav-link:hover {
+  background-color: #0b7dda;
 }
 
 .info-container {
@@ -85,7 +106,7 @@ h1 {
   border-radius: 8px;
   overflow: hidden;
   width: calc(100% + 100px);
-  max-width: 1300px;
+  max-width: 1500px;
   margin: 0 auto;
   padding: 0;
 }
@@ -110,7 +131,7 @@ h1 {
 
 .daily-task-column .time-slot {
   height: 100%;
-  min-height: 100%;
+  min-height: 35px;
   border-radius: 0;
   box-shadow: none;
 }
@@ -129,7 +150,7 @@ h1 {
   border-bottom: 1px solid #e0e0e0;
   margin: 0;
   padding: 0;
-  min-height: 50px;
+  min-height: 35px;
 }
 
 .header-row {
@@ -184,7 +205,7 @@ h1 {
   color: #0d47a1;
   border-right: 1px solid #e0e0e0;
   height: 100%;
-  min-height: 110px;
+  min-height: 35px;
   font-size: 16px;
 }
 
@@ -229,7 +250,10 @@ h1 {
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   height: auto;
-  min-height: 60px;
+  min-height: 35px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
 }
 
 .schedule-row .time-slot:last-child {
@@ -260,7 +284,7 @@ h1 {
   }
   
   .hour-label, .schedule-row .time-slot {
-    min-height: 100px;
+    min-height: 35px;
     height: auto;
   }
   

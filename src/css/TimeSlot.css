@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   padding: 0;
-  margin: 0;
+  margin: 2px 0;
   background-color: transparent;
   border-radius: 6px;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -10,6 +10,7 @@
   height: 100%;
   min-height: 140px;
   box-sizing: border-box;
+  width: 100%;
 }
 
 /* 时间段状态样式 */
@@ -38,26 +39,25 @@
 }
 
 .time-display {
-  font-weight: bold;
-  color: #555;
-  font-size: 16px;
-  margin: 0;
-  text-align: center;
-  padding: 2px 0;
-  border-bottom: 1px dashed #e0e0e0;
+  display: none;
 }
 
 .task-container {
   flex: 1;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
   position: relative;
   min-height: 65px;
   background-color: transparent;
   border-radius: 4px;
-  padding: 0;
+  padding: 0 2px 0 0;
   margin: 0;
-  overflow-y: auto;
+  overflow: visible;
+  width: auto;
+  box-sizing: border-box;
+  min-width: 0;
 }
 
 .empty-task {
@@ -75,10 +75,20 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
   gap: 0;
-  margin: 0;
-  padding: 0 2px;
-  margin-bottom: 0;
+  padding: 2px;
+  margin: 2px;
+  margin-bottom: 2px;
+  width: auto;
+  box-sizing: border-box;
+  min-width: 0;
+}
+
+.tasks-list .task-item {
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
 }
 
 .task-item {
@@ -86,11 +96,18 @@
   align-items: center;
   padding: 2px;
   margin: 2px;
+  margin-bottom: 2px;
   border-radius: 8px;
   background-color: #e3f2fd;
   transition: all 0.2s ease;
   border-left: 6px solid #2196f3;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+  flex: 0 0 auto;
+  min-width: 0;
+  width: 100%;
 }
 
 .task-item:hover {
@@ -222,13 +239,64 @@
   transform: translate(-50%, -50%) scale(1.1);
 }
 
-/* 当有任务时，按钮位置调整到底部 */
+/* 当有任务时，按钮位置调整到右边 */
 .tasks-list + .add-task-btn {
   position: relative;
   top: auto;
   left: auto;
   transform: none;
-  margin: 10px auto 5px;
+  margin: 2px;
+  display: inline-flex;
+  align-self: center;
+}
+
+.tasks-list + .add-task-btn:hover {
+  transform: scale(1.1);
+}
+
+/* 确保DailyTask不受影响 */
+.daily-task-column .task-container {
+  flex-direction: column;
+  width: 100%;
+}
+
+.daily-task-column .tasks-list {
+  flex-direction: column;
+  width: calc(100% - 4px);
+}
+
+.daily-task-column .task-item {
+  width: 100%;
+  flex: none;
+}
+
+.daily-task-column .tasks-list .task-item {
+  width: 100%;
+  flex: none;
+}
+
+.daily-task-column .add-task-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+.daily-task-column .add-task-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.daily-task-column .tasks-list + .add-task-btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  margin: 0;
+  display: flex;
+}
+
+.daily-task-column .tasks-list + .add-task-btn:hover {
+  transform: translate(-50%, -50%) scale(1.1);
 }
 
 .task-edit {
@@ -236,8 +304,9 @@
   display: flex;
   flex-direction: row;
   gap: 4px;
-  padding: 0 2px;
-  margin: 4px;
+  padding: 2px;
+  margin: 2px;
+  width: calc(100% - 4px);
   align-items: center;
 }
 
@@ -249,6 +318,25 @@
   border-radius: 6px;
   font-size: 14px;
   min-height: 32px;
+}
+
+.task-edit textarea {
+  flex: 1;
+  padding: 8px;
+  margin: 0;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+  font-size: 14px;
+  min-height: 32px;
+  width: calc(100% - 4px);
+  resize: none;
+  line-height: 16px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: normal;
 }
 
 .task-edit button {
@@ -271,16 +359,45 @@
   .time-slot {
     padding: 12px;
     min-height: 125px;
+    width: 100%;
+    margin: 2px 0;
   }
   
-  .time-display {
-    font-size: 14px;
-    padding: 2px 0;
+  .task-container {
+    width: auto;
+    box-sizing: border-box;
+    padding: 0 2px 0 0;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    min-width: 0;
+  }
+  
+  .tasks-list {
+    flex-direction: column;
+    align-items: stretch;
+    padding: 2px;
+    margin: 2px;
+    margin-bottom: 2px;
+    width: auto;
+    box-sizing: border-box;
+    min-width: 0;
   }
   
   .task-item {
     padding: 2px;
     margin: 2px;
+    margin-bottom: 2px;
+    min-height: 0;
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 100%;
+  }
+  
+  .tasks-list .task-item {
+    flex: 0 0 auto;
+    min-width: 0;
+    width: 100%;
   }
   
   .status-btn {
@@ -297,7 +414,44 @@
   
   /* 小屏幕上任务列表后的按钮样式 */
   .tasks-list + .add-task-btn {
-    margin: 8px auto 3px;
+    margin: 2px;
+    display: inline-flex;
+    align-self: center;
+  }
+  
+  /* 确保小屏幕上DailyTask不受影响 */
+  .daily-task-column .task-container {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .daily-task-column .tasks-list {
+    flex-direction: column;
+    width: calc(100% - 4px);
+  }
+  
+  .daily-task-column .task-item {
+    width: 100%;
+    flex: none;
+  }
+  
+  .daily-task-column .tasks-list .task-item {
+    width: 100%;
+    flex: none;
+  }
+  
+  .daily-task-column .add-task-btn {
+    right: auto;
+    left: 50%;
+  }
+  
+  .daily-task-column .tasks-list + .add-task-btn {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    margin: 0;
+    display: flex;
   }
   
   .task-content {
@@ -311,5 +465,19 @@
   .task-edit input, .task-edit button {
     font-size: 14px;
     min-height: 32px;
+  }
+  
+  .task-edit textarea {
+    font-size: 14px;
+    min-height: 32px;
+    width: calc(100% - 4px);
+    line-height: 16px;
+    padding: 8px;
+    display: flex;
+    align-items: center;
+    resize: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: normal;
   }
 }
