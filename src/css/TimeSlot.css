@@ -296,7 +296,7 @@
 }
 
 .daily-task-column .tasks-list + .add-task-btn:hover {
-  transform: translate(-50%, -50%) scale(1.1);
+  transform:none;
 }
 
 .task-edit {
