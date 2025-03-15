@@ -14,13 +14,11 @@ const navigationStyles = {
 };
 
 function CustomCalendar({ historyData, onDateSelect }) {
-  // 设置初始值为昨天，而不是今天
+  // 设置初始值为今天，而不是昨天
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
   
-  const [value, setValue] = useState(yesterday);
+  const [value, setValue] = useState(today);
   const [markedDates, setMarkedDates] = useState({});
   const calendarRef = useRef(null);
   
@@ -64,18 +62,12 @@ function CustomCalendar({ historyData, onDateSelect }) {
     if (historyData) {
       const marked = {};
       Object.keys(historyData).forEach(dateStr => {
-        // 确保只标记过去的日期
-        const dateObj = new Date(dateStr);
-        const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0);
-        
-        if (dateObj < currentDate) {
-          const data = historyData[dateStr];
-          marked[dateStr] = {
-            hasData: true,
-            stats: data.stats || { completed: 0, total: 0 }
-          };
-        }
+        // 标记所有日期，包括今天和未来日期
+        const data = historyData[dateStr];
+        marked[dateStr] = {
+          hasData: true,
+          stats: data.stats || { completed: 0, total: 0 }
+        };
       });
       setMarkedDates(marked);
     }
@@ -83,17 +75,6 @@ function CustomCalendar({ historyData, onDateSelect }) {
   
   // 处理日期变化
   const handleDateChange = (date) => {
-    // 检查是否是今天或未来日期
-    const selectedDate = new Date(date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    
-    // 如果是今天或未来日期，不允许选择
-    if (selectedDate >= today) {
-      alert('只能查看过去日期的任务记录');
-      return;
-    }
-    
     // 检查选择的日期是否有历史数据
     const formattedDate = formatDate(date);
     if (!markedDates[formattedDate] || !markedDates[formattedDate].hasData) {
@@ -120,11 +101,6 @@ function CustomCalendar({ historyData, onDateSelect }) {
   // 自定义日期渲染
   const tileContent = ({ date, view }) => {
     if (view !== 'month') return null;
-    
-    // 检查是否是今天或未来日期
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    if (date >= currentDate) return null;
     
     const formattedDate = formatDate(date);
     const dateData = markedDates[formattedDate];
@@ -208,23 +184,8 @@ function CustomCalendar({ historyData, onDateSelect }) {
   const tileClassName = ({ date, view }) => {
     if (view !== 'month') return null;
     
-    // 今天和未来日期添加禁用样式
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    
-    if (date >= currentDate) {
-      return 'disabled-date';
-    }
-    
     const formattedDate = formatDate(date);
     return markedDates[formattedDate] && markedDates[formattedDate].hasData ? 'has-data' : null;
-  };
-  
-  // 禁用今天和未来日期
-  const tileDisabled = ({ date }) => {
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    return date >= currentDate; // 禁用今天和未来日期
   };
   
   return (
@@ -232,11 +193,9 @@ function CustomCalendar({ historyData, onDateSelect }) {
       <Calendar
         onChange={handleDateChange}
         value={value}
-        maxDate={yesterday}
         tileContent={tileContent}
         tileClassName={tileClassName}
-        tileDisabled={tileDisabled}
-        activeStartDate={yesterday}
+        activeStartDate={today}
         showNeighboringMonth={false}
         minDetail="month"
         next2Label={null}

@@ -214,40 +214,29 @@ button.react-calendar__tile--active.has-data:focus {
   background-color: #F44336;
 }
 
-/* 禁用的日期样式 */
-.disabled-date,
+/* 禁用的日期样式 - 移除禁用样式，允许选择所有日期 */
 .react-calendar__tile:disabled {
-  opacity: 0.4;
-  background-color: #f0f0f0;
-  color: #999;
-  cursor: default !important; /* 改为默认鼠标样式，不显示禁止符号 */
-  text-decoration: line-through;
+  opacity: 1;
+  background-color: transparent;
+  color: inherit;
+  cursor: default !important;
+  text-decoration: none;
   position: relative;
 }
 
-.disabled-date:hover,
 .react-calendar__tile:disabled:hover {
-  background-color: #f0f0f0 !important;
-  cursor: default !important; /* 改为默认鼠标样式，不显示禁止符号 */
+  background-color: #e6f7ff !important;
+  cursor: default !important;
 }
 
-/* 为禁用日期添加斜线 */
-.disabled-date::after,
+/* 移除禁用日期的斜线 */
 .react-calendar__tile:disabled::after {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-image: linear-gradient(to bottom right, transparent calc(50% - 1px), #ccc, transparent calc(50% + 1px));
-  pointer-events: none;
+  display: none;
 }
 
-/* 确保禁用日期的标记不显示 */
-.disabled-date .date-marker,
+/* 确保禁用日期的标记可以显示 */
 .react-calendar__tile:disabled .date-marker {
-  display: none;
+  display: block;
 }
 
 /* 响应式调整 */

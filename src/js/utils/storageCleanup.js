@@ -6,42 +6,11 @@ export const cleanupFutureDates = () => {
   try {
     const savedHistory = localStorage.getItem('taskHistory');
     if (savedHistory) {
-      const historyData = JSON.parse(savedHistory);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      let hasChanges = false;
-      const cleanedHistory = {};
-      
-      Object.keys(historyData).forEach(dateStr => {
-        try {
-          const date = new Date(dateStr);
-          if (!isNaN(date.getTime()) && date < today) {
-            cleanedHistory[dateStr] = historyData[dateStr];
-          } else {
-            console.log(`[清理] 删除未来日期数据: ${dateStr}`);
-            hasChanges = true;
-          }
-        } catch (e) {
-          console.error(`[清理] 处理日期 ${dateStr} 时出错:`, e);
-          hasChanges = true;
-        }
-      });
-      
-      if (hasChanges) {
-        localStorage.setItem('taskHistory', JSON.stringify(cleanedHistory));
-        console.log('[清理] 已清除历史记录中的未来日期数据');
-        
-        // 触发storage事件，通知其他组件刷新数据
-        if (window.dispatchEvent) {
-          window.dispatchEvent(new Event('storage'));
-        }
-      }
-      
-      return cleanedHistory;
+      // 直接返回解析后的历史数据，不再删除任何日期的数据
+      return JSON.parse(savedHistory);
     }
   } catch (error) {
-    console.error('[清理] 清除未来日期数据时出错:', error);
+    console.error('[历史] 解析历史数据时出错:', error);
   }
   return {};
 };

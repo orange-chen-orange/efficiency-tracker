@@ -82,43 +82,11 @@ function DailySchedule() {
     try {
       const savedHistory = localStorage.getItem(HISTORY_KEY);
       if (savedHistory) {
-        const historyData = JSON.parse(savedHistory);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
-        
-        let hasChanges = false;
-        const cleanedHistory = {};
-        
-        Object.keys(historyData).forEach(dateStr => {
-          try {
-            const date = new Date(dateStr);
-            if (!isNaN(date.getTime()) && date < today) {
-              cleanedHistory[dateStr] = historyData[dateStr];
-            } else {
-              console.log(`Deleting future date data: ${dateStr}`);
-              hasChanges = true;
-            }
-          } catch (e) {
-            console.error(`Processing date ${dateStr} error:`, e);
-            // If date format is invalid, don't keep this data
-            hasChanges = true;
-          }
-        });
-        
-        if (hasChanges) {
-          localStorage.setItem(HISTORY_KEY, JSON.stringify(cleanedHistory));
-          console.log('Future date data cleared');
-          
-          // Force refresh history component (if exists)
-          if (window.dispatchEvent) {
-            window.dispatchEvent(new Event('storage'));
-          }
-        }
-        
-        return cleanedHistory;
+        // 直接返回解析后的历史数据，不再删除任何日期的数据
+        return JSON.parse(savedHistory);
       }
     } catch (error) {
-      console.error('Clearing future date data error:', error);
+      console.error('Error parsing history data:', error);
     }
     return {};
   };
