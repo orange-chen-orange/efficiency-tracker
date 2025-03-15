@@ -188,6 +188,24 @@ function CustomCalendar({ historyData, onDateSelect }) {
     return markedDates[formattedDate] && markedDates[formattedDate].hasData ? 'has-data' : null;
   };
   
+  // 禁用日期函数
+  const tileDisabled = ({ date, view }) => {
+    // 只在月视图中禁用日期
+    if (view !== 'month') return false;
+    
+    const formattedDate = formatDate(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    // 只禁用未来日期，允许选择今天和过去的日期
+    if (date > today) {
+      return true;
+    }
+    
+    // 如果日期没有数据，也禁用
+    return !markedDates[formattedDate] || !markedDates[formattedDate].hasData;
+  };
+  
   return (
     <div className="custom-calendar-container" ref={calendarRef}>
       <Calendar
@@ -200,6 +218,7 @@ function CustomCalendar({ historyData, onDateSelect }) {
         minDetail="month"
         next2Label={null}
         prev2Label={null}
+        tileDisabled={tileDisabled}
       />
     </div>
   );

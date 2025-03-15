@@ -23,7 +23,7 @@ function App() {
           Object.keys(historyData).forEach(dateStr => {
             try {
               const date = new Date(dateStr);
-              if (!isNaN(date.getTime()) && date < today) {
+              if (!isNaN(date.getTime()) && date <= today) {
                 cleanedHistory[dateStr] = historyData[dateStr];
               } else {
                 console.log(`[App] Deleted future date data: ${dateStr}`);

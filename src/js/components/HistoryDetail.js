@@ -16,8 +16,8 @@ function HistoryDetail() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    if (selectedDate >= today) {
-      setError('Can only view task records for past dates');
+    if (selectedDate > today) {
+      setError('Can only view task records for today or past dates');
       setLoading(false);
       return;
     }
@@ -97,17 +97,72 @@ function HistoryDetail() {
       timeSlotRows.push(
         <div className="history-schedule-row" key={hourIndex}>
           <div className="history-hour-label">{hourDisplay}:00</div>
-          {hourSlots.map((slot, segmentIndex) => (
-            <div className="history-time-slot" key={`${hourIndex}-${segmentIndex}`}>
-              <div className="history-time-slot-content">
-                {slot.task.split('\n').map((taskItem, taskIndex) => (
-                  <div className="history-task-item" key={taskIndex}>
-                    {taskItem}
-                  </div>
-                ))}
+          {hourSlots.map((slot, segmentIndex) => {
+            // 过滤出有效的任务项
+            const taskItems = slot.task.split('\n').filter(item => item.trim() !== '');
+            
+            // 确定时间段的整体状态
+            let slotStatus = 'initial';
+            
+            if (taskItems.length > 0) {
+              const statuses = taskItems.map(item => {
+                const statusMatch = item.match(/\[STATUS:(.*?)\]/);
+                return statusMatch ? statusMatch[1] : 'initial';
+              });
+              
+              const hasCompleted = statuses.includes('completed');
+              const hasFailed = statuses.includes('failed');
+              const hasInitial = statuses.includes('initial');
+              
+              if (hasCompleted && !hasFailed && !hasInitial) {
+                slotStatus = 'completed';
+              } else if (hasFailed && !hasCompleted && !hasInitial) {
+                slotStatus = 'failed';
+              } else if (hasInitial && !hasCompleted && !hasFailed) {
+                slotStatus = 'initial';
+              } else if (taskItems.length > 0) {
+                slotStatus = 'mixed';
+              }
+            }
+            
+            return (
+              <div className={`time-slot read-only status-${slotStatus}`} key={`${hourIndex}-${segmentIndex}`}>
+                <div className="time-display">{slot.time}</div>
+                <div className="task-container">
+                  {taskItems.length > 0 && (
+                    <div className="tasks-list">
+                      {taskItems.map((taskItem, taskIndex) => {
+                        // 提取任务状态
+                        let taskStatus = 'initial';
+                        let taskContent = taskItem;
+                        
+                        const statusMatch = taskItem.match(/\[STATUS:(.*?)\]/);
+                        if (statusMatch) {
+                          taskStatus = statusMatch[1];
+                          taskContent = taskItem.replace(/\[STATUS:.*?\]/, '').trim();
+                        }
+                        
+                        // 只有当任务内容不为空时才渲染
+                        if (taskContent.trim() !== '') {
+                          return (
+                            <div 
+                              className={`task-item status-${taskStatus}`} 
+                              key={taskIndex}
+                            >
+                              <div className="task-content">
+                                {taskContent}
+                              </div>
+                            </div>
+                          );
+                        }
+                        return null;
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     });
@@ -130,7 +185,7 @@ function HistoryDetail() {
         <h2>Daily Tasks</h2>
         <DailyTaskSlot
           time="Daily Tasks"
-          task={historyData.dailyTask}
+          task={historyData.dailyTasks}
           isReadOnly={true}
         />
       </div>

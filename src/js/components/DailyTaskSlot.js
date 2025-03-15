@@ -252,6 +252,7 @@ function DailyTaskSlot({ time, task, onTaskChange, isReadOnly = false }) {
           <button 
             className="delete-task-btn"
             onClick={() => deleteTask(index)}
+            title="Delete"
           >
             ×
           </button>

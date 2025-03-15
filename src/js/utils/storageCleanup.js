@@ -1,13 +1,40 @@
 /**
  * 清除本地存储中的未来日期数据
- * 这个函数会检查taskHistory中的所有日期，删除今天和未来的日期数据
+ * 这个函数会检查taskHistory中的所有日期，删除未来的日期数据，保留今天和过去的日期数据
  */
 export const cleanupFutureDates = () => {
   try {
     const savedHistory = localStorage.getItem('taskHistory');
     if (savedHistory) {
-      // 直接返回解析后的历史数据，不再删除任何日期的数据
-      return JSON.parse(savedHistory);
+      const historyData = JSON.parse(savedHistory);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      let hasChanges = false;
+      const cleanedHistory = {};
+      
+      Object.keys(historyData).forEach(dateStr => {
+        try {
+          const date = new Date(dateStr);
+          // 保留今天和过去的日期数据，只删除未来日期的数据
+          if (!isNaN(date.getTime()) && date <= today) {
+            cleanedHistory[dateStr] = historyData[dateStr];
+          } else {
+            console.log(`[历史] 删除未来日期数据: ${dateStr}`);
+            hasChanges = true;
+          }
+        } catch (e) {
+          console.error(`[历史] 处理日期 ${dateStr} 时出错:`, e);
+          hasChanges = true;
+        }
+      });
+      
+      if (hasChanges) {
+        localStorage.setItem('taskHistory', JSON.stringify(cleanedHistory));
+        console.log('[历史] 已清除未来日期的历史数据');
+      }
+      
+      return cleanedHistory;
     }
   } catch (error) {
     console.error('[历史] 解析历史数据时出错:', error);
