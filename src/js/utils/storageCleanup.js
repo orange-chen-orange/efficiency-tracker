@@ -1,40 +1,23 @@
 /**
+ * 获取本地日期字符串的辅助函数
+ */
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
+/**
  * 清除本地存储中的未来日期数据
- * 这个函数会检查taskHistory中的所有日期，删除未来的日期数据，保留今天和过去的日期数据
+ * 这个函数会检查taskHistory中的所有日期，删除今天和未来的日期数据
  */
 export const cleanupFutureDates = () => {
   try {
     const savedHistory = localStorage.getItem('taskHistory');
     if (savedHistory) {
-      const historyData = JSON.parse(savedHistory);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      let hasChanges = false;
-      const cleanedHistory = {};
-      
-      Object.keys(historyData).forEach(dateStr => {
-        try {
-          const date = new Date(dateStr);
-          // 保留今天和过去的日期数据，只删除未来日期的数据
-          if (!isNaN(date.getTime()) && date <= today) {
-            cleanedHistory[dateStr] = historyData[dateStr];
-          } else {
-            console.log(`[历史] 删除未来日期数据: ${dateStr}`);
-            hasChanges = true;
-          }
-        } catch (e) {
-          console.error(`[历史] 处理日期 ${dateStr} 时出错:`, e);
-          hasChanges = true;
-        }
-      });
-      
-      if (hasChanges) {
-        localStorage.setItem('taskHistory', JSON.stringify(cleanedHistory));
-        console.log('[历史] 已清除未来日期的历史数据');
-      }
-      
-      return cleanedHistory;
+      // 直接返回解析后的历史数据，不再删除任何日期的数据
+      return JSON.parse(savedHistory);
     }
   } catch (error) {
     console.error('[历史] 解析历史数据时出错:', error);
@@ -74,7 +57,7 @@ export const createTestData = () => {
     for (let i = 1; i <= 7; i++) {
       const date = new Date(today);
       date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split('T')[0];
+      const dateStr = getLocalDateString(date); // 使用本地日期格式
       
       // 创建随机任务数据
       const totalTasks = Math.floor(Math.random() * 10) + 1;

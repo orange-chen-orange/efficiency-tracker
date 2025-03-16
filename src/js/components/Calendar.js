@@ -3,6 +3,14 @@ import Calendar from 'react-calendar';
 import 'react-calendar/dist/Calendar.css';
 import '../../css/CustomCalendar.css';
 
+// 获取本地日期字符串的辅助函数
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 // 自定义导航按钮样式
 const navigationStyles = {
   navigationButton: {
@@ -60,7 +68,17 @@ function CustomCalendar({ historyData, onDateSelect }) {
   // 当历史数据变化时，更新标记日期
   useEffect(() => {
     if (historyData) {
+      console.log('日历组件收到的历史数据日期:', Object.keys(historyData));
+      
       const marked = {};
+      const now = new Date();
+      const todayISO = getLocalDateString(now);
+      console.log('日历组件中的今天日期:', {
+        '本地时间': now.toString(),
+        'ISO日期': todayISO,
+        '时区偏移(分钟)': now.getTimezoneOffset()
+      });
+      
       Object.keys(historyData).forEach(dateStr => {
         // 标记所有日期，包括今天和未来日期
         const data = historyData[dateStr];
@@ -68,6 +86,7 @@ function CustomCalendar({ historyData, onDateSelect }) {
           hasData: true,
           stats: data.stats || { completed: 0, total: 0 }
         };
+        console.log(`标记日期: ${dateStr}, 数据:`, data.stats);
       });
       setMarkedDates(marked);
     }
@@ -92,10 +111,7 @@ function CustomCalendar({ historyData, onDateSelect }) {
   
   // 格式化日期为 YYYY-MM-DD
   const formatDate = (date) => {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
+    return getLocalDateString(date);
   };
   
   // 自定义日期渲染

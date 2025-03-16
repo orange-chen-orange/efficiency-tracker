@@ -4,6 +4,14 @@ import TimeLine from './TimeLine';
 import DailyTaskSlot from './DailyTaskSlot';
 import '../../css/DailySchedule.css';
 
+// 添加一个获取本地日期字符串的辅助函数
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 function DailySchedule() {
   // Constants
   const HISTORY_KEY = 'taskHistory';
@@ -175,7 +183,7 @@ function DailySchedule() {
 
   // Load saved data
   const loadSavedData = () => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     
     try {
       // 从历史记录中加载今天的数据
@@ -298,7 +306,7 @@ function DailySchedule() {
         
         // 更新今天的历史数据，而不是保存到 dailySchedule
         try {
-          const today = new Date().toISOString().split('T')[0];
+          const today = getLocalDateString();
           let historyData = {};
           
           const savedHistory = localStorage.getItem(HISTORY_KEY);
@@ -597,7 +605,7 @@ function DailySchedule() {
 
   // Update task for a specific time slot
   const updateTask = (hourIndex, segmentIndex, task) => {
-    const today = new Date().toISOString().split('T')[0];
+    const today = getLocalDateString();
     let historyData = {};
     
     try {
@@ -657,13 +665,23 @@ function DailySchedule() {
 
   // Update daily task
   const updateDailyTask = (task) => {
-    const today = new Date().toISOString().split('T')[0];
+    // 添加日期调试信息
+    const now = new Date();
+    const localDateStr = getLocalDateString(now); // 使用辅助函数获取本地日期
+    console.log('当前日期信息:', {
+      '本地时间': now.toString(),
+      '本地日期': localDateStr,
+      '时区偏移(分钟)': now.getTimezoneOffset()
+    });
+    
+    const today = localDateStr;
     let historyData = {};
     
     try {
       const savedHistory = localStorage.getItem(HISTORY_KEY);
       if (savedHistory) {
         historyData = JSON.parse(savedHistory);
+        console.log('历史数据中的日期:', Object.keys(historyData));
       }
     } catch (error) {
       console.error('Error loading history data:', error);
@@ -676,6 +694,7 @@ function DailySchedule() {
       
       // 保存到 localStorage
       localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+      console.log(`更新了${today}的数据`);
       
       // 更新状态
       setDailyTask(task);
@@ -690,6 +709,7 @@ function DailySchedule() {
       
       historyData[today] = newData;
       localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+      console.log(`创建了${today}的新数据`);
       
       // 更新状态
       setDailyTask(task);
@@ -701,7 +721,16 @@ function DailySchedule() {
     const confirmReset = window.confirm('Are you sure you want to reset all time slots? This will clear all tasks and statuses.');
     
     if (confirmReset) {
-      const today = new Date().toISOString().split('T')[0];
+      // 添加日期调试信息
+      const now = new Date();
+      const localDateStr = getLocalDateString(now); // 使用辅助函数获取本地日期
+      console.log('重置时的日期信息:', {
+        '本地时间': now.toString(),
+        '本地日期': localDateStr,
+        '时区偏移(分钟)': now.getTimezoneOffset()
+      });
+      
+      const today = localDateStr;
       
       // 创建新的时间槽数据
       const initialSlots = initializeTimeSlots();
@@ -713,6 +742,7 @@ function DailySchedule() {
         
         if (savedHistory) {
           historyData = JSON.parse(savedHistory);
+          console.log('重置前历史数据中的日期:', Object.keys(historyData));
         }
         
         // 更新今天的数据
@@ -725,6 +755,7 @@ function DailySchedule() {
         
         // 保存到历史记录
         localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+        console.log(`重置并更新了${today}的数据`);
         
         // 清除已复制的任务
         localStorage.removeItem('copiedTasks');
@@ -755,8 +786,7 @@ function DailySchedule() {
     // 只在组件挂载时执行一次
     const checkPreviousDayData = () => {
       // 获取当前日期
-      const now = new Date();
-      const today = now.toISOString().split('T')[0];
+      const today = getLocalDateString();
       
       // 获取上次保存日期
       const lastSaveDate = localStorage.getItem('lastSaveDate');
@@ -770,7 +800,7 @@ function DailySchedule() {
     // 执行检查
     checkPreviousDayData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 只在组件挂载时执行一次
+  }, []);
   
   // 修改定时保存的 useEffect
   useEffect(() => {
@@ -795,8 +825,7 @@ function DailySchedule() {
       // 设置定时器，在一天结束时更新 lastSaveDate
       const timer = setTimeout(() => {
         // 获取当前日期
-        const now = new Date();
-        const today = now.toISOString().split('T')[0];
+        const today = getLocalDateString();
         
         // 更新上次保存日期
         localStorage.setItem('lastSaveDate', today);
@@ -816,7 +845,7 @@ function DailySchedule() {
       clearTimeout(timer);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []); // 空依赖数组，只在组件挂载时执行一次
+  }, []);
 
   // Render time slots
   const renderTimeSlots = () => {

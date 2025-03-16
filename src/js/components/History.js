@@ -4,13 +4,30 @@ import CustomCalendar from './Calendar';
 import { cleanupFutureDates } from '../utils/storageCleanup';
 import '../../css/History.css';
 
+// 获取本地日期字符串的辅助函数
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 function History() {
   const [filteredHistoryData, setFilteredHistoryData] = useState({});
   const navigate = useNavigate();
   
   // Clean up future dates in history data
   const cleanupAndFilterHistoryData = () => {
+    const now = new Date();
+    const todayISO = getLocalDateString(now);
+    console.log('历史组件中的今天日期:', {
+      '本地时间': now.toString(),
+      '本地日期': todayISO,
+      '时区偏移(分钟)': now.getTimezoneOffset()
+    });
+    
     const cleanedData = cleanupFutureDates();
+    console.log('清理后的历史数据日期:', Object.keys(cleanedData));
     setFilteredHistoryData(cleanedData);
     return cleanedData;
   };

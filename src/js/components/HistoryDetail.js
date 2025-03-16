@@ -4,6 +4,14 @@ import TimeSlot from './TimeSlot';
 import DailyTaskSlot from './DailyTaskSlot';
 import '../../css/HistoryDetail.css';
 
+// 获取本地日期字符串的辅助函数
+const getLocalDateString = (date = new Date()) => {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+};
+
 function HistoryDetail() {
   const { date } = useParams();
   const [historyData, setHistoryData] = useState(null);
@@ -16,8 +24,15 @@ function HistoryDetail() {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     
-    if (selectedDate > today) {
-      setError('Can only view task records for today or past dates');
+    console.log('历史详情组件中的日期信息:', {
+      '选择的日期': date,
+      '解析后的日期': selectedDate.toString(),
+      '今天日期': today.toString(),
+      '今天本地日期': getLocalDateString(today)
+    });
+    
+    if (selectedDate >= today) {
+      setError('Can only view task records for past dates');
       setLoading(false);
       return;
     }
@@ -26,8 +41,12 @@ function HistoryDetail() {
       const savedHistory = localStorage.getItem('taskHistory');
       if (savedHistory) {
         const parsedHistory = JSON.parse(savedHistory);
+        console.log('历史数据中的日期:', Object.keys(parsedHistory));
         if (parsedHistory[date]) {
           setHistoryData(parsedHistory[date]);
+          console.log(`找到${date}的历史数据:`, parsedHistory[date]);
+        } else {
+          console.log(`未找到${date}的历史数据`);
         }
       }
       setLoading(false);
@@ -185,7 +204,7 @@ function HistoryDetail() {
         <h2>Daily Tasks</h2>
         <DailyTaskSlot
           time="Daily Tasks"
-          task={historyData.dailyTasks}
+          task={historyData.dailyTasks || ''}
           isReadOnly={true}
         />
       </div>
