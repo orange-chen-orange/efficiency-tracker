@@ -1,4 +1,6 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
+// 修复timeSlots键的一致性问题，确保所有键都是字符串类型
+
 import TimeSlot from './TimeSlot';
 import TimeLine from './TimeLine';
 import DailyTaskSlot from './DailyTaskSlot';

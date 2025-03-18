@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from 'react';
+// 修复timeSlots数据格式转换，确保所有键都是字符串类型
+
 import { useParams, Link } from 'react-router-dom';
 import TimeSlot from './TimeSlot';
 import DailyTaskSlot from './DailyTaskSlot';
