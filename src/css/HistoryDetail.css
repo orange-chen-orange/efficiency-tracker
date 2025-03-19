@@ -236,6 +236,7 @@
 .time-slot.read-only .task-content {
   flex: 1;
   padding: 4px;
+  padding-left: 4px;
   margin: 0;
   word-break: break-word;
   font-size: 14px;
@@ -380,6 +381,7 @@
   flex: 1;
   cursor: default;
   padding: 0;
+  padding-left: 4px;
   margin: 0;
   word-break: break-word;
   font-size: 16px;
@@ -589,6 +591,7 @@
   flex: 1;
   cursor: default;
   padding: 4px;
+  padding-left: 4px;
   margin: 0;
   word-break: break-word;
   font-size: 14px;
@@ -670,7 +673,7 @@
   flex-direction: column;
   gap: 0;
   margin: 2px;
-  padding: 2px;
+  padding: 2px 2px 2px 6px;
   margin-bottom: 2px;
   width: calc(100% - 4px);
   align-self: flex-start;

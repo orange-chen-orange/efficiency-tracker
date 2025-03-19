@@ -116,6 +116,7 @@
   flex: 1;
   cursor: default;
   padding: 0;
+  padding-left: 4px;
   margin: 0;
   word-break: break-word;
   font-size: 16px;
