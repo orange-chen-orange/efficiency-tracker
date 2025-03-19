@@ -18,9 +18,9 @@ function DailySchedule() {
   
   // Get user settings
   const getUserSettings = () => {
-    let startHour = 7;
-    let endHour = 22;
-    const segmentsPerHour = 3; // 固定为3，不再从设置中读取
+    let startHour = 0;
+    let endHour = 24;
+    let segmentsPerHour = 3;
     
     try {
       const savedSettings = localStorage.getItem('appSettings');
@@ -28,7 +28,7 @@ function DailySchedule() {
         const settings = JSON.parse(savedSettings);
         startHour = settings.startHour;
         endHour = settings.endHour;
-        // 不再读取segmentsPerHour，使用固定值3
+        segmentsPerHour = settings.segmentsPerHour;
       }
     } catch (error) {
       console.error('Reading settings error:', error);
@@ -39,12 +39,12 @@ function DailySchedule() {
 
   // Initialize time slot data
   const initializeTimeSlots = () => {
-    // Try to read user settings from localStorage
-    const { startHour, endHour, segmentsPerHour } = getUserSettings();
-    
+    // 始终创建完整的24小时时间槽数据
     const slots = [];
-    // Use time range and segments from user settings
-    for (let hour = startHour; hour < endHour; hour++) {
+    const { segmentsPerHour } = getUserSettings();
+    
+    // 创建完整的24小时时间槽数据
+    for (let hour = 0; hour < 24; hour++) {
       const hourSlots = [];
       // Calculate minutes per segment
       const minutesPerSegment = 60 / segmentsPerHour;
@@ -69,6 +69,8 @@ function DailySchedule() {
         
         hourSlots.push({
           id: `${hour}-${segment}`,
+          hourIndex: hour,
+          segmentIndex: segment,
           time: `${hour}:${formattedStartMinute} - ${formattedEndHour}:${formattedEndMinuteStr}`,
           task: '',
         });
@@ -700,8 +702,8 @@ function DailySchedule() {
       return null;
     }
     
-    // Calculate hour index (relative to start time)
-    const hourIndex = currentHour - startHour;
+    // 直接使用当前小时作为hourIndex，因为timeSlots是24小时格式
+    const hourIndex = currentHour;
     
     // Calculate minutes per segment
     const minutesPerSegment = 60 / segmentsPerHour;
@@ -745,13 +747,13 @@ function DailySchedule() {
   const copyTaskToCurrent = (taskContent) => {
     const currentSlot = findCurrentTimeSlot();
     if (!currentSlot) {
-      console.log('Current time is outside of the schedule range (7:00-22:00)');
+      console.log('当前时间不在设置的显示时间范围内');
       return;
     }
     
     // Check if task already exists in current time slot
     if (isTaskInCurrentTimeSlot(taskContent)) {
-      console.log(`Task "${taskContent}" is already in the current time slot`);
+      console.log(`任务 "${taskContent}" 已经存在于当前时间槽`);
       return;
     }
     
@@ -779,7 +781,7 @@ function DailySchedule() {
       console.error('Error saving copied tasks:', error);
     }
     
-    console.log(`Task copied to current time slot (${hourIndex}, ${segmentIndex}): ${taskContent}`);
+    console.log(`任务已复制到当前时间槽 (${hourIndex}:${segmentIndex * (60/getUserSettings().segmentsPerHour)}): ${taskContent}`);
   };
 
   // Update task for a specific time slot
@@ -1030,8 +1032,8 @@ function DailySchedule() {
   const renderTimeSlots = () => {
     const mainContent = [];
     
-    // Get user settings time range
-    const { startHour, segmentsPerHour } = getUserSettings();
+    // 获取用户设置的时间范围
+    const { startHour, endHour, segmentsPerHour } = getUserSettings();
     
     // Add header row
     mainContent.push(
@@ -1054,28 +1056,37 @@ function DailySchedule() {
     // Create time slots rows
     const timeSlotRows = [];
     
-    // Add rows for each hour
-    timeSlots.forEach((hourSlots, hourIndex) => {
-      const actualHour = startHour + hourIndex;
+    // 检查timeSlots是否为空或未定义
+    if (!timeSlots || timeSlots.length === 0) {
+      return mainContent;
+    }
+    
+    // 只渲染用户设置的时间范围内的时间槽
+    for (let hour = startHour; hour < endHour; hour++) {
+      // 确保这个小时的时间槽数据存在
+      if (!timeSlots[hour] || timeSlots[hour].length === 0) {
+        console.log(`小时 ${hour} 没有时间槽数据，跳过`);
+        continue;
+      }
       
       // Add time line row above each hour
       timeSlotRows.push(
-        <div className="time-line-row" key={`timeline-${hourIndex}`}>
+        <div className="time-line-row" key={`timeline-${hour}`}>
           <div className="hour-label"></div>
-          <TimeLine hour={actualHour} />
+          <TimeLine hour={hour} />
         </div>
       );
       
       // Add time slot row
       timeSlotRows.push(
-        <div className="schedule-row" key={hourIndex}>
-          <div className="hour-label">{actualHour}:00</div>
-          {hourSlots.map((slot, segmentIndex) => (
+        <div className="schedule-row" key={hour}>
+          <div className="hour-label">{hour}:00</div>
+          {timeSlots[hour].map((slot, segmentIndex) => (
             <TimeSlot
               key={slot.id}
               time={slot.time}
               task={slot.task}
-              onTaskChange={(task) => updateTask(hourIndex, segmentIndex, task)}
+              onTaskChange={(task) => updateTask(hour, segmentIndex, task)}
               copyTaskToCurrent={copyTaskToCurrent}
               copiedTasks={copiedTasks}
               isTaskInCurrentTimeSlot={isTaskInCurrentTimeSlot}
@@ -1083,7 +1094,7 @@ function DailySchedule() {
           ))}
         </div>
       );
-    });
+    }
     
     // Create the main grid with daily task column
     mainContent.push(
