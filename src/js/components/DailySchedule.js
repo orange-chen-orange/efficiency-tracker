@@ -18,8 +18,8 @@ function DailySchedule() {
   
   // Get user settings
   const getUserSettings = () => {
-    let startHour = 7;
-    let endHour = 22;
+    let startHour = 0;
+    let endHour = 24;
     let segmentsPerHour = 3;
     
     try {
@@ -39,12 +39,12 @@ function DailySchedule() {
 
   // Initialize time slot data
   const initializeTimeSlots = () => {
-    // Try to read user settings from localStorage
-    const { startHour, endHour, segmentsPerHour } = getUserSettings();
-    
+    // 始终创建完整的24小时时间槽数据
     const slots = [];
-    // Use time range and segments from user settings
-    for (let hour = startHour; hour < endHour; hour++) {
+    const { segmentsPerHour } = getUserSettings();
+    
+    // 创建完整的24小时时间槽数据
+    for (let hour = 0; hour < 24; hour++) {
       const hourSlots = [];
       // Calculate minutes per segment
       const minutesPerSegment = 60 / segmentsPerHour;
@@ -69,6 +69,8 @@ function DailySchedule() {
         
         hourSlots.push({
           id: `${hour}-${segment}`,
+          hourIndex: hour,
+          segmentIndex: segment,
           time: `${hour}:${formattedStartMinute} - ${formattedEndHour}:${formattedEndMinuteStr}`,
           task: '',
         });
@@ -159,6 +161,110 @@ function DailySchedule() {
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // 添加一个专门用于监听组件可见性变化的useEffect
+  // 当用户从设置页面切换回来时，重新检查时间范围并更新时间槽
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        console.log('DailySchedule component is now visible, checking for settings changes...');
+        // 获取当前存储的设置
+        const { startHour, endHour } = getUserSettings();
+        
+        // 检查时间槽数量是否与设置匹配
+        let shouldReinitialize = false;
+        
+        // 如果时间槽为空或时间范围与当前不匹配，则重新初始化
+        if (!timeSlots || timeSlots.length === 0) {
+          shouldReinitialize = true;
+        } else {
+          // 计算基于当前设置应该有的时间槽数量
+          const expectedHours = endHour - startHour;
+          if (timeSlots.length !== expectedHours) {
+            shouldReinitialize = true;
+          }
+        }
+        
+        if (shouldReinitialize) {
+          console.log('Settings have changed, reinitializing time slots...');
+          // 保存当前任务数据到临时映射
+          const currentTaskData = {};
+          
+          // 只在时间槽有数据时处理
+          if (timeSlots && timeSlots.length > 0) {
+            timeSlots.forEach((hourSlots) => {
+              hourSlots.forEach((slot) => {
+                if (slot.task) {
+                  // 使用时间作为键保存任务
+                  currentTaskData[slot.time] = slot.task;
+                }
+              });
+            });
+          }
+          
+          // 重新初始化时间槽
+          const freshTimeSlots = initializeTimeSlots();
+          
+          // 将保存的任务数据映射到新时间槽
+          const updatedTimeSlots = freshTimeSlots.map((hourSlots) => {
+            return hourSlots.map((slot) => {
+              // 检查是否有匹配的时间槽任务
+              if (currentTaskData[slot.time]) {
+                return { ...slot, task: currentTaskData[slot.time] };
+              }
+              return slot;
+            });
+          });
+          
+          // 更新状态
+          setTimeSlots(updatedTimeSlots);
+          
+          // 更新今天的历史数据
+          try {
+            const today = getLocalDateString();
+            let historyData = {};
+            
+            const savedHistory = localStorage.getItem(HISTORY_KEY);
+            if (savedHistory) {
+              historyData = JSON.parse(savedHistory);
+            }
+            
+            // 更新今天的数据
+            if (historyData[today]) {
+              historyData[today].timeSlots = updatedTimeSlots;
+              historyData[today].timestamp = Date.now();
+              historyData[today].stats = calculateStats(updatedTimeSlots);
+            } else {
+              // 如果今天的数据不存在，创建新数据
+              historyData[today] = {
+                timeSlots: updatedTimeSlots,
+                dailyTasks: dailyTask,
+                stats: calculateStats(updatedTimeSlots),
+                timestamp: Date.now()
+              };
+            }
+            
+            // 保存到历史记录
+            localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+            console.log('Updated time slots saved to history');
+          } catch (error) {
+            console.error('Error saving new time slots to history:', error);
+          }
+        }
+      }
+    }
+    
+    // 首次运行检查
+    handleVisibilityChange();
+    
+    // 添加可见性变更事件监听器
+    document.addEventListener("visibilitychange", handleVisibilityChange);
+    
+    // 清理函数
+    return () => {
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [timeSlots, dailyTask]);
 
   // Add URL parameter handling logic in component initialization
   useEffect(() => {
@@ -266,7 +372,7 @@ function DailySchedule() {
     // Define event handler function
     const handleStorageChange = (event) => {
       if (event.key === 'appSettings') {
-        console.log('Settings changed, reinitializing time slots...');
+        console.log('Settings changed via storage event, reinitializing time slots...');
         
         // Update CSS variables
         const { segmentsPerHour } = getUserSettings();
@@ -338,12 +444,87 @@ function DailySchedule() {
       }
     };
     
-    // Add event listener
+    // 添加处理自定义事件的函数
+    const handleSettingsChanged = (event) => {
+      console.log('Settings changed via custom event, reinitializing time slots...', event.detail);
+      
+      // 更新CSS变量
+      const { segmentsPerHour } = getUserSettings();
+      document.documentElement.style.setProperty('--segments-per-hour', segmentsPerHour);
+      
+      // 保存当前任务数据
+      const currentTaskData = {};
+      
+      // 只在时间槽有数据时处理
+      if (timeSlots && timeSlots.length > 0) {
+        timeSlots.forEach((hourSlots) => {
+          hourSlots.forEach((slot) => {
+            if (slot.task) {
+              // 使用时间作为键保存任务
+              currentTaskData[slot.time] = slot.task;
+            }
+          });
+        });
+      }
+      
+      // 重新初始化时间槽
+      const freshTimeSlots = initializeTimeSlots();
+      
+      // 将保存的任务数据映射到新时间槽
+      const updatedTimeSlots = freshTimeSlots.map((hourSlots) => {
+        return hourSlots.map((slot) => {
+          // 检查是否有匹配的时间槽任务
+          if (currentTaskData[slot.time]) {
+            return { ...slot, task: currentTaskData[slot.time] };
+          }
+          return slot;
+        });
+      });
+      
+      // 更新状态
+      setTimeSlots(updatedTimeSlots);
+      
+      // 更新今天的历史数据
+      try {
+        const today = getLocalDateString();
+        let historyData = {};
+        
+        const savedHistory = localStorage.getItem(HISTORY_KEY);
+        if (savedHistory) {
+          historyData = JSON.parse(savedHistory);
+        }
+        
+        // 更新今天的数据
+        if (historyData[today]) {
+          historyData[today].timeSlots = updatedTimeSlots;
+          historyData[today].timestamp = Date.now();
+          historyData[today].stats = calculateStats(updatedTimeSlots);
+        } else {
+          // 如果今天的数据不存在，创建新数据
+          historyData[today] = {
+            timeSlots: updatedTimeSlots,
+            dailyTasks: dailyTask,
+            stats: calculateStats(updatedTimeSlots),
+            timestamp: Date.now()
+          };
+        }
+        
+        // 保存到历史记录
+        localStorage.setItem(HISTORY_KEY, JSON.stringify(historyData));
+        console.log('Updated time slots saved to history');
+      } catch (error) {
+        console.error('Error saving new time slots to history:', error);
+      }
+    };
+    
+    // Add event listeners
     window.addEventListener('storage', handleStorageChange);
+    window.addEventListener('settingsChanged', handleSettingsChanged);
     
     // Cleanup function
     return () => {
       window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('settingsChanged', handleSettingsChanged);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [timeSlots, dailyTask]);
@@ -521,8 +702,8 @@ function DailySchedule() {
       return null;
     }
     
-    // Calculate hour index (relative to start time)
-    const hourIndex = currentHour - startHour;
+    // 直接使用当前小时作为hourIndex，因为timeSlots是24小时格式
+    const hourIndex = currentHour;
     
     // Calculate minutes per segment
     const minutesPerSegment = 60 / segmentsPerHour;
@@ -566,13 +747,13 @@ function DailySchedule() {
   const copyTaskToCurrent = (taskContent) => {
     const currentSlot = findCurrentTimeSlot();
     if (!currentSlot) {
-      console.log('Current time is outside of the schedule range (7:00-22:00)');
+      console.log('当前时间不在设置的显示时间范围内');
       return;
     }
     
     // Check if task already exists in current time slot
     if (isTaskInCurrentTimeSlot(taskContent)) {
-      console.log(`Task "${taskContent}" is already in the current time slot`);
+      console.log(`任务 "${taskContent}" 已经存在于当前时间槽`);
       return;
     }
     
@@ -600,7 +781,7 @@ function DailySchedule() {
       console.error('Error saving copied tasks:', error);
     }
     
-    console.log(`Task copied to current time slot (${hourIndex}, ${segmentIndex}): ${taskContent}`);
+    console.log(`任务已复制到当前时间槽 (${hourIndex}:${segmentIndex * (60/getUserSettings().segmentsPerHour)}): ${taskContent}`);
   };
 
   // Update task for a specific time slot
@@ -851,8 +1032,8 @@ function DailySchedule() {
   const renderTimeSlots = () => {
     const mainContent = [];
     
-    // Get user settings time range
-    const { startHour, segmentsPerHour } = getUserSettings();
+    // 获取用户设置的时间范围
+    const { startHour, endHour, segmentsPerHour } = getUserSettings();
     
     // Add header row
     mainContent.push(
@@ -875,28 +1056,37 @@ function DailySchedule() {
     // Create time slots rows
     const timeSlotRows = [];
     
-    // Add rows for each hour
-    timeSlots.forEach((hourSlots, hourIndex) => {
-      const actualHour = startHour + hourIndex;
+    // 检查timeSlots是否为空或未定义
+    if (!timeSlots || timeSlots.length === 0) {
+      return mainContent;
+    }
+    
+    // 只渲染用户设置的时间范围内的时间槽
+    for (let hour = startHour; hour < endHour; hour++) {
+      // 确保这个小时的时间槽数据存在
+      if (!timeSlots[hour] || timeSlots[hour].length === 0) {
+        console.log(`小时 ${hour} 没有时间槽数据，跳过`);
+        continue;
+      }
       
       // Add time line row above each hour
       timeSlotRows.push(
-        <div className="time-line-row" key={`timeline-${hourIndex}`}>
+        <div className="time-line-row" key={`timeline-${hour}`}>
           <div className="hour-label"></div>
-          <TimeLine hour={actualHour} />
+          <TimeLine hour={hour} />
         </div>
       );
       
       // Add time slot row
       timeSlotRows.push(
-        <div className="schedule-row" key={hourIndex}>
-          <div className="hour-label">{actualHour}:00</div>
-          {hourSlots.map((slot, segmentIndex) => (
+        <div className="schedule-row" key={hour}>
+          <div className="hour-label">{hour}:00</div>
+          {timeSlots[hour].map((slot, segmentIndex) => (
             <TimeSlot
               key={slot.id}
               time={slot.time}
               task={slot.task}
-              onTaskChange={(task) => updateTask(hourIndex, segmentIndex, task)}
+              onTaskChange={(task) => updateTask(hour, segmentIndex, task)}
               copyTaskToCurrent={copyTaskToCurrent}
               copiedTasks={copiedTasks}
               isTaskInCurrentTimeSlot={isTaskInCurrentTimeSlot}
@@ -904,7 +1094,7 @@ function DailySchedule() {
           ))}
         </div>
       );
-    });
+    }
     
     // Create the main grid with daily task column
     mainContent.push(
