@@ -97,17 +97,74 @@ function HistoryDetail() {
       timeSlotRows.push(
         <div className="history-schedule-row" key={hourIndex}>
           <div className="history-hour-label">{hourDisplay}:00</div>
-          {hourSlots.map((slot, segmentIndex) => (
-            <div className="history-time-slot" key={`${hourIndex}-${segmentIndex}`}>
-              <div className="history-time-slot-content">
-                {slot.task.split('\n').map((taskItem, taskIndex) => (
-                  <div className="history-task-item" key={taskIndex}>
-                    {taskItem}
-                  </div>
-                ))}
+          {hourSlots.map((slot, segmentIndex) => {
+            // 检查时间槽内任务的状态，确定时间槽的背景色
+            let slotStatusClass = "status-initial"; // 默认状态
+            
+            // 分析所有任务的状态
+            const taskItems = slot.task.split('\n').filter(item => item.trim() !== '');
+            const hasCompletedTasks = taskItems.some(task => task.includes("[STATUS:completed]"));
+            const hasFailedTasks = taskItems.some(task => task.includes("[STATUS:failed]"));
+            const hasInitialTasks = taskItems.some(task => task.includes("[STATUS:initial]") || !task.includes("[STATUS:"));
+            
+            // 根据任务状态确定时间槽状态
+            if (taskItems.length === 0) {
+              // 无任务，保持初始状态
+              slotStatusClass = "status-initial";
+            } else if (hasCompletedTasks && !hasFailedTasks && !hasInitialTasks) {
+              // 全部完成
+              slotStatusClass = "status-completed";
+            } else if (hasFailedTasks && !hasCompletedTasks && !hasInitialTasks) {
+              // 全部失败
+              slotStatusClass = "status-failed";
+            } else if (hasInitialTasks && !hasCompletedTasks && !hasFailedTasks) {
+              // 全部初始
+              slotStatusClass = "status-initial";
+            } else {
+              // 混合状态
+              slotStatusClass = "status-mixed";
+            }
+            
+            return (
+              <div className={`history-time-slot ${slotStatusClass}`} key={`${hourIndex}-${segmentIndex}`}>
+                <div className="history-time-slot-content">
+                  {slot.task.split('\n').map((taskItem, taskIndex) => {
+                    // 检查任务文本是否包含状态信息
+                    let taskText = taskItem;
+                    let statusClass = "status-initial"; // 默认状态
+                    
+                    // 提取状态信息
+                    const statusMatch = taskItem.match(/\[STATUS:(.*?)\]/);
+                    if (statusMatch) {
+                      // 提取纯任务文本（移除状态部分）
+                      taskText = taskItem.replace(/\s*\[STATUS:.*?\]/, '');
+                      
+                      // 设置适当的状态类
+                      const status = statusMatch[1];
+                      if (status === "completed") {
+                        statusClass = "status-completed";
+                      } else if (status === "failed") {
+                        statusClass = "status-failed";
+                      }
+                    }
+                    
+                    // 仅当有任务内容时才显示
+                    if (taskText.trim() === '') return null;
+                    
+                    return (
+                      <div 
+                        className={`history-task-item ${statusClass}`} 
+                        key={taskIndex}
+                        data-status={statusMatch ? statusMatch[1] : "initial"}
+                      >
+                        {taskText}
+                      </div>
+                    );
+                  })}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       );
     });
@@ -119,18 +176,20 @@ function HistoryDetail() {
     <div className="history-detail-container">
       <h1>Task Records for {date}</h1>
       
-      <div className="history-stats">
-        <p>Total Tasks: {historyData.stats.total}</p>
-        <p>Completed: {historyData.stats.completed}</p>
-        <p>Failed: {historyData.stats.failed}</p>
-        <p>Pending: {historyData.stats.initial}</p>
+      <div className="info-container">
+        <p className="schedule-info">
+          Tasks: {historyData.stats.total} | 
+          Completed: {historyData.stats.completed} | 
+          Failed: {historyData.stats.failed} | 
+          Pending: {historyData.stats.initial}
+        </p>
       </div>
       
       <div className="history-daily-task">
         <h2>Daily Tasks</h2>
         <DailyTaskSlot
           time="Daily Tasks"
-          task={historyData.dailyTask}
+          task={historyData.dailyTasks}
           isReadOnly={true}
         />
       </div>

@@ -71,9 +71,9 @@
 .daily-task-slot .task-item {
   display: flex;
   align-items: center;
-  padding: 4px;
-  margin: 4px;
-  margin-bottom: 4px;
+  padding: 2px;
+  margin: 2px;
+  margin-bottom: 2px;
   border-radius: 8px;
   background-color: #e3f2fd;
   transition: all 0.2s ease;
@@ -85,21 +85,21 @@
 }
 
 .daily-task-slot .task-item:last-child {
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .daily-task-slot .task-item.status-completed {
-  background-color: rgba(76, 175, 80, 0.1);
+  background-color: #e8f5e9;
   border-left: 6px solid #4caf50;
 }
 
 .daily-task-slot .task-item.status-failed {
-  background-color: rgba(244, 67, 54, 0.1);
+  background-color: #ffebee;
   border-left: 6px solid #f44336;
 }
 
 .daily-task-slot .task-item.status-initial {
-  background-color: rgba(33, 150, 243, 0.1);
+  background-color: #e3f2fd;
   border-left: 6px solid #2196f3;
 }
 
@@ -130,7 +130,7 @@
 }
 
 /* Status button */
-.daily-task-slot .status-btn {
+.status-btn {
   background: none;
   border: 1px solid #ddd;
   cursor: default;
@@ -149,44 +149,48 @@
   opacity: 0.7;
 }
 
-.daily-task-slot .status-btn:hover {
+.status-btn:hover {
   transform: scale(1.1);
   background-color: rgba(0, 0, 0, 0.05);
   opacity: 1;
 }
 
-.daily-task-slot .status-btn.active {
+.status-btn.active {
   border-width: 2px;
   box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
   opacity: 1;
+  transform: scale(1.05);
 }
 
-.daily-task-slot .status-btn:nth-child(1).active {
-  color: #4caf50;
+/* 完成按钮（绿色）*/
+.status-btn:nth-child(1).active {
   border-color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.15);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
 }
 
-.daily-task-slot .status-btn:nth-child(2).active {
-  color: #f44336;
+/* 失败按钮（红色）*/
+.status-btn:nth-child(2).active {
   border-color: #f44336;
+  background-color: rgba(244, 67, 54, 0.15);
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
 }
 
 /* Delete button */
-.daily-task-slot .delete-task-btn {
+.delete-task-btn {
   background: none;
   border: none;
   margin: 0;
   padding: 0;
-  font-size: 18px;
-  cursor: default;
   color: #f44336;
-  opacity: 0.5;
+  font-size: 22px;
+  cursor: default;
   transition: all 0.2s ease;
 }
 
-.daily-task-slot .delete-task-btn:hover {
-  opacity: 1;
-  transform: scale(1.1);
+.delete-task-btn:hover {
+  transform: scale(1.2);
+  opacity: 0.8;
 }
 
 /* Add button - initial state in the middle */
@@ -346,5 +350,13 @@
   
   .daily-task-slot .task-edit button {
     min-width: 50px; /* Smaller minimum width */
+  }
+}
+
+@media (max-width: 768px) {
+  .status-btn {
+    width: 16px;
+    height: 16px;
+    font-size: 8px;
   }
 } 

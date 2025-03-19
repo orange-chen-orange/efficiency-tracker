@@ -289,40 +289,181 @@
 
 /* 每日任务样式 */
 .daily-task-slot.read-only {
-  border-radius: 8px;
-  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 0;
   margin-bottom: 0;
-  border: 1px solid #e0e0e0;
-  padding: 10px;
+  background-color: transparent;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: auto;
+  min-height: 69.55px;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* 状态样式 */
+.daily-task-slot.read-only.status-initial {
+  border-left: 6px solid #2196f3;
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.daily-task-slot.read-only.status-completed {
+  border-left: 6px solid #4caf50;
+  background-color: rgba(76, 175, 80, 0.05);
+}
+
+.daily-task-slot.read-only.status-failed {
+  border-left: 6px solid #f44336;
+  background-color: rgba(244, 67, 54, 0.05);
+}
+
+.daily-task-slot.read-only.status-mixed {
+  border-left: 6px solid #ffc107;
+  background-color: rgba(255, 193, 7, 0.05);
+}
+
+.daily-task-slot.read-only .task-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  min-height: 35px;
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 2px;
+  margin: 0;
+  overflow-y: visible;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+.daily-task-slot.read-only .tasks-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 2px;
+  padding: 2px;
+  margin-bottom: 2px;
+  width: calc(100% - 4px);
+  align-self: flex-start;
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+  overflow: visible;
 }
 
 .daily-task-slot.read-only .task-item {
-  margin-bottom: 8px;
-  padding: 10px;
-  border-radius: 4px;
-  background-color: #f9f9f9;
-  border: 1px solid #eee;
+  display: flex;
+  align-items: center;
+  padding: 2px;
+  margin: 2px;
+  margin-bottom: 2px;
+  border-radius: 8px;
+  background-color: #e3f2fd;
+  transition: all 0.2s ease;
+  border-left: 6px solid #2196f3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+}
+
+.daily-task-slot.read-only .task-item:last-child {
+  margin-bottom: 2px;
 }
 
 .daily-task-slot.read-only .task-content {
-  font-size: 14px;
-  padding: 5px;
+  flex: 1;
+  cursor: default;
+  padding: 0;
+  margin: 0;
+  word-break: break-word;
+  font-size: 16px;
+  text-align: left;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  min-height: 0;
+  height: auto;
+  line-height: 1.2;
+  box-sizing: border-box;
 }
 
 /* 每日任务状态颜色 */
 .daily-task-slot.read-only .task-item.status-completed {
-  background-color: rgba(76, 175, 80, 0.2);
-  border-color: rgba(76, 175, 80, 0.3);
+  background-color: #e8f5e9;
+  border-left: 6px solid #4caf50;
 }
 
 .daily-task-slot.read-only .task-item.status-failed {
-  background-color: rgba(244, 67, 54, 0.2);
-  border-color: rgba(244, 67, 54, 0.3);
+  background-color: #ffebee;
+  border-left: 6px solid #f44336;
 }
 
 .daily-task-slot.read-only .task-item.status-initial {
-  background-color: rgba(255, 255, 255, 0.5);
-  border-color: #e0e0e0;
+  background-color: #e3f2fd;
+  border-left: 6px solid #2196f3;
+}
+
+/* 添加状态按钮样式 */
+.daily-task-slot.read-only .task-status-controls {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.daily-task-slot.read-only .status-btn {
+  background: none;
+  border: 1px solid #ddd;
+  cursor: default;
+  font-size: 9px;
+  padding: 0;
+  margin: 0 3px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.daily-task-slot.read-only .status-btn.active {
+  border-width: 2px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* 状态按钮颜色 */
+.daily-task-slot.read-only .status-btn:nth-child(1).active {
+  border-color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.15);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.daily-task-slot.read-only .status-btn:nth-child(2).active {
+  border-color: #f44336;
+  background-color: rgba(244, 67, 54, 0.15);
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+}
+
+/* 模拟删除按钮样式（虽然在只读模式下不会显示） */
+.daily-task-slot.read-only .delete-task-btn {
+  background: none;
+  border: none;
+  margin: 0;
+  padding: 0;
+  color: #f44336;
+  font-size: 22px;
+  cursor: default;
+  transition: all 0.2s ease;
 }
 
 .back-btn {
@@ -338,4 +479,309 @@
 
 .back-btn:hover {
   background-color: #0b7dda;
+}
+
+.info-container {
+  display: flex;
+  justify-content: space-between;
+  margin: 0 0 20px 0;
+  gap: 0;
+  width: 100%;
+  border-bottom: 1px solid #e0e0e0;
+  padding: 10px;
+  box-sizing: border-box;
+}
+
+.schedule-description, .schedule-info {
+  flex: 1;
+  text-align: center;
+  color: #666;
+  font-size: 16px;
+  font-weight: 500;
+  background-color: rgba(33, 150, 243, 0.1);
+  padding: 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin: 0 5px;
+}
+
+.schedule-info {
+  background-color: rgba(76, 175, 80, 0.1);
+}
+
+/* 确保时间槽内的任务项与主页保持一致的样式 */
+.history-time-slot {
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+  margin: 2px 0;
+  background-color: transparent;
+  border-radius: 6px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  height: 100%;
+  min-height: 35px;
+  box-sizing: border-box;
+  width: 100%;
+}
+
+/* 时间槽状态样式 */
+.history-time-slot.status-initial {
+  border-left: 6px solid #2196f3;
+  background-color: rgba(33, 150, 243, 0.05);
+}
+
+.history-time-slot.status-completed {
+  border-left: 6px solid #4caf50;
+  background-color: rgba(76, 175, 80, 0.5);
+}
+
+.history-time-slot.status-failed {
+  border-left: 6px solid #f44336;
+  background-color: rgba(244, 67, 54, 0.5);
+}
+
+.history-time-slot.status-mixed {
+  border-left: 6px solid #ffc107;
+  background-color: rgba(255, 193, 7, 0.5);
+}
+
+.history-time-slot-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  position: relative;
+  min-height: 35px;
+  background-color: transparent;
+  border-radius: 4px;
+  padding: 2px;
+  margin: 0;
+  overflow: visible;
+  box-sizing: border-box;
+}
+
+.history-time-slot .task-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 2px;
+  padding: 2px;
+  margin-bottom: 2px;
+  width: calc(100% - 4px);
+  align-self: flex-start;
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+  overflow: visible;
+  border-radius: 8px;
+  background-color: #e3f2fd;
+  transition: all 0.2s ease;
+  border-left: 6px solid #2196f3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.history-time-slot .task-item:last-child {
+  margin-bottom: 2px;
+}
+
+.history-time-slot .task-content {
+  flex: 1;
+  cursor: default;
+  padding: 4px;
+  margin: 0;
+  word-break: break-word;
+  font-size: 14px;
+  text-align: left;
+  justify-content: flex-start;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: 0;
+  height: auto;
+  line-height: 1.2;
+  box-sizing: border-box;
+}
+
+/* 状态按钮样式 */
+.history-time-slot .task-status-controls {
+  display: flex;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+}
+
+.history-time-slot .status-btn {
+  background: none;
+  border: 1px solid #ddd;
+  cursor: default;
+  font-size: 9px;
+  padding: 0;
+  margin: 0 3px;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.history-time-slot .status-btn.active {
+  border-width: 2px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+/* 任务状态样式 */
+.history-time-slot .task-item.status-completed {
+  background-color: #e8f5e9;
+  border-left: 6px solid #4caf50;
+}
+
+.history-time-slot .task-item.status-failed {
+  background-color: #ffebee;
+  border-left: 6px solid #f44336;
+}
+
+.history-time-slot .task-item.status-initial {
+  background-color: #e3f2fd;
+  border-left: 6px solid #2196f3;
+}
+
+/* 状态按钮颜色 */
+.history-time-slot .status-btn:nth-child(1).active {
+  border-color: #4caf50;
+  background-color: rgba(76, 175, 80, 0.15);
+  box-shadow: 0 0 8px rgba(76, 175, 80, 0.6);
+}
+
+.history-time-slot .status-btn:nth-child(2).active {
+  border-color: #f44336;
+  background-color: rgba(244, 67, 54, 0.15);
+  box-shadow: 0 0 8px rgba(244, 67, 54, 0.6);
+}
+
+/* 历史任务项样式 - 与主页面的task-item保持一致 */
+.history-task-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  margin: 2px;
+  padding: 2px;
+  margin-bottom: 2px;
+  width: calc(100% - 4px);
+  align-self: flex-start;
+  min-height: 0;
+  height: auto;
+  box-sizing: border-box;
+  overflow: visible;
+  border-radius: 8px;
+  background-color: #e3f2fd;
+  transition: all 0.2s ease;
+  border-left: 6px solid #2196f3;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  position: relative;
+  font-size: 14px;
+  line-height: 1.4;
+  text-align: left;
+  word-break: break-word;
+}
+
+/* 鼠标悬停效果 */
+.history-task-item:hover {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+  transform: translateY(-1px);
+}
+
+/* 状态样式 */
+.history-task-item[data-status="completed"],
+.history-task-item.status-completed {
+  background-color: #e8f5e9;
+  border-left: 6px solid #4caf50;
+}
+
+.history-task-item[data-status="failed"],
+.history-task-item.status-failed {
+  background-color: #ffebee;
+  border-left: 6px solid #f44336;
+}
+
+.history-task-item[data-status="initial"],
+.history-task-item.status-initial {
+  background-color: #e3f2fd;
+  border-left: 6px solid #2196f3;
+}
+
+/* 媒体查询 - 移动设备适配 */
+@media (max-width: 768px) {
+  .history-task-item {
+    padding: 4px 8px;
+    margin: 3px 0;
+    font-size: 13px;
+    min-height: 30px;
+  }
+}
+
+/* 隐藏[STATUS:xxx]文本的样式 */
+.history-task-item:after {
+  content: "";
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 40%; /* 调整覆盖宽度 */
+  background: inherit; /* 使用与任务项相同的背景色 */
+  border-radius: 0 8px 8px 0; /* 保持右侧圆角 */
+  z-index: 1;
+}
+
+/* 移动设备适配 */
+@media (max-width: 768px) {
+  .history-task-item:after {
+    width: 45%; /* 移动设备上可能需要覆盖更多区域 */
+  }
+}
+
+/* 移动设备适配 */
+@media (max-width: 768px) {
+  .daily-task-slot.read-only {
+    min-height: 60px; /* 移动设备上稍微减小高度 */
+  }
+  
+  .daily-task-slot.read-only .task-container {
+    padding: 1px;
+    min-height: 30px;
+  }
+  
+  .daily-task-slot.read-only .tasks-list {
+    margin: 1px;
+    padding: 1px;
+  }
+  
+  .daily-task-slot.read-only .task-item {
+    padding: 1px;
+    margin: 1px;
+    font-size: 14px;
+  }
+  
+  .daily-task-slot.read-only .task-content {
+    font-size: 14px;
+    line-height: 1.1;
+  }
+}
+
+/* 移动设备适配 */
+@media (max-width: 768px) {
+  .history-time-slot {
+    min-height: 30px;
+    margin: 1px 0;
+  }
+  
+  .history-time-slot-content {
+    min-height: 30px;
+    padding: 1px;
+  }
 } 

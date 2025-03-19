@@ -35,10 +35,7 @@ function History() {
   
   // Handle date click event
   const handleDateClick = (date) => {
-    if (!filteredHistoryData[date]) {
-      alert(`${date} has no task records`);
-      return;
-    }
+    // 不再检查日期是否有历史数据，允许选择任何日期
     
     // Navigate directly to the detail view page
     navigate(`/history/${date}`);

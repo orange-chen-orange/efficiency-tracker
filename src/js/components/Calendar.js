@@ -14,13 +14,11 @@ const navigationStyles = {
 };
 
 function CustomCalendar({ historyData, onDateSelect }) {
-  // 设置初始值为昨天，而不是今天
+  // 设置初始值为当前日期，不再使用昨天
   const today = new Date();
   today.setHours(0, 0, 0, 0);
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
   
-  const [value, setValue] = useState(yesterday);
+  const [value, setValue] = useState(today);
   const [markedDates, setMarkedDates] = useState({});
   const calendarRef = useRef(null);
   
@@ -64,18 +62,12 @@ function CustomCalendar({ historyData, onDateSelect }) {
     if (historyData) {
       const marked = {};
       Object.keys(historyData).forEach(dateStr => {
-        // 确保只标记过去的日期
-        const dateObj = new Date(dateStr);
-        const currentDate = new Date();
-        currentDate.setHours(0, 0, 0, 0);
-        
-        if (dateObj < currentDate) {
-          const data = historyData[dateStr];
-          marked[dateStr] = {
-            hasData: true,
-            stats: data.stats || { completed: 0, total: 0 }
-          };
-        }
+        // 不再限制只标记过去的日期
+        const data = historyData[dateStr];
+        marked[dateStr] = {
+          hasData: true,
+          stats: data.stats || { completed: 0, total: 0 }
+        };
       });
       setMarkedDates(marked);
     }
@@ -83,24 +75,13 @@ function CustomCalendar({ historyData, onDateSelect }) {
   
   // 处理日期变化
   const handleDateChange = (date) => {
-    // 检查是否是今天或未来日期
+    // 选择日期不再受限制
     const selectedDate = new Date(date);
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
     
-    // 如果是今天或未来日期，不允许选择
-    if (selectedDate >= today) {
-      alert('只能查看过去日期的任务记录');
-      return;
-    }
-    
-    // 检查选择的日期是否有历史数据
+    // 获取格式化的日期
     const formattedDate = formatDate(date);
-    if (!markedDates[formattedDate] || !markedDates[formattedDate].hasData) {
-      alert(`${formattedDate} 没有任务记录`);
-      return;
-    }
     
+    // 不再检查日期是否有历史数据，允许选择任何日期
     setValue(date);
     
     // 调用父组件的回调函数
@@ -121,10 +102,7 @@ function CustomCalendar({ historyData, onDateSelect }) {
   const tileContent = ({ date, view }) => {
     if (view !== 'month') return null;
     
-    // 检查是否是今天或未来日期
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    if (date >= currentDate) return null;
+    // 移除检查今天或未来日期的限制
     
     const formattedDate = formatDate(date);
     const dateData = markedDates[formattedDate];
@@ -208,23 +186,15 @@ function CustomCalendar({ historyData, onDateSelect }) {
   const tileClassName = ({ date, view }) => {
     if (view !== 'month') return null;
     
-    // 今天和未来日期添加禁用样式
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    
-    if (date >= currentDate) {
-      return 'disabled-date';
-    }
+    // 移除今天和未来日期的禁用样式处理
     
     const formattedDate = formatDate(date);
     return markedDates[formattedDate] && markedDates[formattedDate].hasData ? 'has-data' : null;
   };
   
-  // 禁用今天和未来日期
+  // 修改为不禁用任何日期
   const tileDisabled = ({ date }) => {
-    const currentDate = new Date();
-    currentDate.setHours(0, 0, 0, 0);
-    return date >= currentDate; // 禁用今天和未来日期
+    return false; // 不禁用任何日期
   };
   
   return (
@@ -232,11 +202,12 @@ function CustomCalendar({ historyData, onDateSelect }) {
       <Calendar
         onChange={handleDateChange}
         value={value}
-        maxDate={yesterday}
+        // 移除 maxDate 限制
         tileContent={tileContent}
         tileClassName={tileClassName}
         tileDisabled={tileDisabled}
-        activeStartDate={yesterday}
+        // 使用当前日期作为活动起始日期，而不是昨天
+        activeStartDate={new Date()}
         showNeighboringMonth={false}
         minDetail="month"
         next2Label={null}

@@ -1,47 +1,17 @@
 /**
  * 清除本地存储中的未来日期数据
- * 这个函数会检查taskHistory中的所有日期，删除今天和未来的日期数据
+ * 修改后：保留当天和未来日期的数据
  */
 export const cleanupFutureDates = () => {
   try {
     const savedHistory = localStorage.getItem('taskHistory');
     if (savedHistory) {
       const historyData = JSON.parse(savedHistory);
-      const today = new Date();
-      today.setHours(0, 0, 0, 0);
-      
-      let hasChanges = false;
-      const cleanedHistory = {};
-      
-      Object.keys(historyData).forEach(dateStr => {
-        try {
-          const date = new Date(dateStr);
-          if (!isNaN(date.getTime()) && date < today) {
-            cleanedHistory[dateStr] = historyData[dateStr];
-          } else {
-            console.log(`[清理] 删除未来日期数据: ${dateStr}`);
-            hasChanges = true;
-          }
-        } catch (e) {
-          console.error(`[清理] 处理日期 ${dateStr} 时出错:`, e);
-          hasChanges = true;
-        }
-      });
-      
-      if (hasChanges) {
-        localStorage.setItem('taskHistory', JSON.stringify(cleanedHistory));
-        console.log('[清理] 已清除历史记录中的未来日期数据');
-        
-        // 触发storage事件，通知其他组件刷新数据
-        if (window.dispatchEvent) {
-          window.dispatchEvent(new Event('storage'));
-        }
-      }
-      
-      return cleanedHistory;
+      // 已不再移除当前和未来日期的数据，直接返回所有数据
+      return historyData;
     }
   } catch (error) {
-    console.error('[清理] 清除未来日期数据时出错:', error);
+    console.error('[清理] 处理历史数据时出错:', error);
   }
   return {};
 };
