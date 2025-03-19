@@ -18,6 +18,27 @@ function HistoryDetail() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
+  // 获取用户设置
+  const getUserSettings = () => {
+    let startHour = 0;
+    let endHour = 24;
+    let segmentsPerHour = 3;
+    
+    try {
+      const savedSettings = localStorage.getItem('appSettings');
+      if (savedSettings) {
+        const settings = JSON.parse(savedSettings);
+        startHour = settings.startHour;
+        endHour = settings.endHour;
+        segmentsPerHour = settings.segmentsPerHour;
+      }
+    } catch (error) {
+      console.error('Reading settings error:', error);
+    }
+    
+    return { startHour, endHour, segmentsPerHour };
+  };
+  
   // Check if date is today or future date
   useEffect(() => {
     const selectedDate = new Date(date);
@@ -88,8 +109,20 @@ function HistoryDetail() {
   const renderTimeSlots = () => {
     const timeSlotRows = [];
     
-    // Get user settings for time range and segments
-    const segmentsPerHour = historyData.timeSlots[0]?.length || 3;
+    // 获取用户设置的时间范围
+    const { startHour, endHour, segmentsPerHour } = getUserSettings();
+    
+    // 检查时间槽数据的格式
+    if (!historyData.timeSlots) {
+      return (
+        <div className="no-data-message">
+          No time slots data available for this day
+        </div>
+      );
+    }
+    
+    // 判断数据是数组格式还是对象格式
+    const isArrayFormat = Array.isArray(historyData.timeSlots);
     
     // Add header row
     timeSlotRows.push(
@@ -108,83 +141,186 @@ function HistoryDetail() {
       </div>
     );
     
-    // Iterate through time slot data
-    historyData.timeSlots.forEach((hourSlots, hourIndex) => {
-      // Get hour
-      const hourDisplay = hourSlots[0]?.time.split(':')[0] || hourIndex;
-      
-      timeSlotRows.push(
-        <div className="history-schedule-row" key={hourIndex}>
-          <div className="history-hour-label">{hourDisplay}:00</div>
-          {hourSlots.map((slot, segmentIndex) => {
-            // 过滤出有效的任务项
-            const taskItems = slot.task.split('\n').filter(item => item.trim() !== '');
-            
-            // 确定时间段的整体状态
-            let slotStatus = 'initial';
-            
-            if (taskItems.length > 0) {
-              const statuses = taskItems.map(item => {
-                const statusMatch = item.match(/\[STATUS:(.*?)\]/);
-                return statusMatch ? statusMatch[1] : 'initial';
-              });
+    // 根据数据格式不同，采用不同的渲染方式
+    if (isArrayFormat) {
+      // 数组格式 (新版本) - 只渲染用户设置的时间范围内的数据
+      for (let hour = startHour; hour < endHour; hour++) {
+        // 确保该小时的数据存在
+        if (!historyData.timeSlots[hour] || historyData.timeSlots[hour].length === 0) {
+          console.log(`小时 ${hour} 没有时间槽数据，跳过`);
+          continue;
+        }
+        
+        const hourSlots = historyData.timeSlots[hour];
+        
+        timeSlotRows.push(
+          <div className="history-schedule-row" key={hour}>
+            <div className="history-hour-label">{hour}:00</div>
+            {hourSlots.map((slot, segmentIndex) => {
+              // 过滤出有效的任务项
+              const taskItems = slot.task ? slot.task.split('\n').filter(item => item.trim() !== '') : [];
               
-              const hasCompleted = statuses.includes('completed');
-              const hasFailed = statuses.includes('failed');
-              const hasInitial = statuses.includes('initial');
+              // 确定时间段的整体状态
+              let slotStatus = 'initial';
               
-              if (hasCompleted && !hasFailed && !hasInitial) {
-                slotStatus = 'completed';
-              } else if (hasFailed && !hasCompleted && !hasInitial) {
-                slotStatus = 'failed';
-              } else if (hasInitial && !hasCompleted && !hasFailed) {
-                slotStatus = 'initial';
-              } else if (taskItems.length > 0) {
-                slotStatus = 'mixed';
+              if (taskItems.length > 0) {
+                const statuses = taskItems.map(item => {
+                  const statusMatch = item.match(/\[STATUS:(.*?)\]/);
+                  return statusMatch ? statusMatch[1] : 'initial';
+                });
+                
+                const hasCompleted = statuses.includes('completed');
+                const hasFailed = statuses.includes('failed');
+                const hasInitial = statuses.includes('initial');
+                
+                if (hasCompleted && !hasFailed && !hasInitial) {
+                  slotStatus = 'completed';
+                } else if (hasFailed && !hasCompleted && !hasInitial) {
+                  slotStatus = 'failed';
+                } else if (hasInitial && !hasCompleted && !hasFailed) {
+                  slotStatus = 'initial';
+                } else if (taskItems.length > 0) {
+                  slotStatus = 'mixed';
+                }
               }
-            }
-            
-            return (
-              <div className={`time-slot read-only status-${slotStatus}`} key={`${hourIndex}-${segmentIndex}`}>
-                <div className="time-display">{slot.time}</div>
-                <div className="task-container">
-                  {taskItems.length > 0 && (
-                    <div className="tasks-list">
-                      {taskItems.map((taskItem, taskIndex) => {
-                        // 提取任务状态
-                        let taskStatus = 'initial';
-                        let taskContent = taskItem;
-                        
-                        const statusMatch = taskItem.match(/\[STATUS:(.*?)\]/);
-                        if (statusMatch) {
-                          taskStatus = statusMatch[1];
-                          taskContent = taskItem.replace(/\[STATUS:.*?\]/, '').trim();
-                        }
-                        
-                        // 只有当任务内容不为空时才渲染
-                        if (taskContent.trim() !== '') {
-                          return (
-                            <div 
-                              className={`task-item status-${taskStatus}`} 
-                              key={taskIndex}
-                            >
-                              <div className="task-content">
-                                {taskContent}
+              
+              return (
+                <div className={`time-slot read-only status-${slotStatus}`} key={`${hour}-${segmentIndex}`}>
+                  <div className="time-display">{slot.time}</div>
+                  <div className="task-container">
+                    {taskItems.length > 0 && (
+                      <div className="tasks-list">
+                        {taskItems.map((taskItem, taskIndex) => {
+                          // 提取任务状态
+                          let taskStatus = 'initial';
+                          let taskContent = taskItem;
+                          
+                          const statusMatch = taskItem.match(/\[STATUS:(.*?)\]/);
+                          if (statusMatch) {
+                            taskStatus = statusMatch[1];
+                            taskContent = taskItem.replace(/\[STATUS:.*?\]/, '').trim();
+                          }
+                          
+                          // 只有当任务内容不为空时才渲染
+                          if (taskContent.trim() !== '') {
+                            return (
+                              <div 
+                                className={`task-item status-${taskStatus}`} 
+                                key={taskIndex}
+                              >
+                                <div className="task-content">
+                                  {taskContent}
+                                </div>
                               </div>
-                            </div>
-                          );
-                        }
-                        return null;
-                      })}
-                    </div>
-                  )}
+                            );
+                          }
+                          return null;
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      );
-    });
+              );
+            })}
+          </div>
+        );
+      }
+    } else {
+      // 对象格式 (旧版本) - 收集所有时间槽并按小时分组
+      const hourGroups = {};
+      
+      // 收集所有时间槽并按小时分组
+      Object.values(historyData.timeSlots).forEach(slot => {
+        const hour = parseInt(slot.time.split(':')[0], 10);
+        
+        // 只处理在用户设置范围内的时间槽
+        if (hour >= startHour && hour < endHour) {
+          if (!hourGroups[hour]) {
+            hourGroups[hour] = [];
+          }
+          hourGroups[hour].push(slot);
+        }
+      });
+      
+      // 按小时顺序渲染
+      Object.keys(hourGroups)
+        .sort((a, b) => parseInt(a) - parseInt(b))
+        .forEach(hour => {
+          const hourSlots = hourGroups[hour];
+          
+          timeSlotRows.push(
+            <div className="history-schedule-row" key={hour}>
+              <div className="history-hour-label">{hour}:00</div>
+              {hourSlots.map((slot, segmentIndex) => {
+                // 过滤出有效的任务项
+                const taskItems = slot.task ? slot.task.split('\n').filter(item => item.trim() !== '') : [];
+                
+                // 确定时间段的整体状态
+                let slotStatus = 'initial';
+                
+                if (taskItems.length > 0) {
+                  const statuses = taskItems.map(item => {
+                    const statusMatch = item.match(/\[STATUS:(.*?)\]/);
+                    return statusMatch ? statusMatch[1] : 'initial';
+                  });
+                  
+                  const hasCompleted = statuses.includes('completed');
+                  const hasFailed = statuses.includes('failed');
+                  const hasInitial = statuses.includes('initial');
+                  
+                  if (hasCompleted && !hasFailed && !hasInitial) {
+                    slotStatus = 'completed';
+                  } else if (hasFailed && !hasCompleted && !hasInitial) {
+                    slotStatus = 'failed';
+                  } else if (hasInitial && !hasCompleted && !hasFailed) {
+                    slotStatus = 'initial';
+                  } else if (taskItems.length > 0) {
+                    slotStatus = 'mixed';
+                  }
+                }
+                
+                return (
+                  <div className={`time-slot read-only status-${slotStatus}`} key={`${hour}-${segmentIndex}`}>
+                    <div className="time-display">{slot.time}</div>
+                    <div className="task-container">
+                      {taskItems.length > 0 && (
+                        <div className="tasks-list">
+                          {taskItems.map((taskItem, taskIndex) => {
+                            // 提取任务状态
+                            let taskStatus = 'initial';
+                            let taskContent = taskItem;
+                            
+                            const statusMatch = taskItem.match(/\[STATUS:(.*?)\]/);
+                            if (statusMatch) {
+                              taskStatus = statusMatch[1];
+                              taskContent = taskItem.replace(/\[STATUS:.*?\]/, '').trim();
+                            }
+                            
+                            // 只有当任务内容不为空时才渲染
+                            if (taskContent.trim() !== '') {
+                              return (
+                                <div 
+                                  className={`task-item status-${taskStatus}`} 
+                                  key={taskIndex}
+                                >
+                                  <div className="task-content">
+                                    {taskContent}
+                                  </div>
+                                </div>
+                              );
+                            }
+                            return null;
+                          })}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          );
+        });
+    }
     
     return timeSlotRows;
   };
@@ -194,10 +330,10 @@ function HistoryDetail() {
       <h1>Task Records for {date}</h1>
       
       <div className="history-stats">
-        <p>Total Tasks: {historyData.stats.total}</p>
-        <p>Completed: {historyData.stats.completed}</p>
-        <p>Failed: {historyData.stats.failed}</p>
-        <p>Pending: {historyData.stats.initial}</p>
+        <p>Total Tasks: {historyData.stats?.total || 0}</p>
+        <p>Completed: {historyData.stats?.completed || 0}</p>
+        <p>Failed: {historyData.stats?.failed || 0}</p>
+        <p>Pending: {historyData.stats?.initial || 0}</p>
       </div>
       
       <div className="history-daily-task">
